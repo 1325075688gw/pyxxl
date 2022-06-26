@@ -17,3 +17,4 @@ htmlcov/
 
 .mypy_cache/
 **/.vscode
+peach.egg-info/

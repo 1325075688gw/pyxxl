@@ -1,0 +1,207 @@
+- model: admin.permission
+  pk: 1
+  fields:
+    name: 用户角色权限管理
+    code: admin_group
+    sort_index: 1
+    full_path: 1/
+    is_leaf: 0
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 2
+  fields:
+    parent: 1
+    name: 用户管理
+    code: admin_user_group
+    sort_index: 1
+    full_path: 1/2/
+    is_leaf: 0
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 3
+  fields:
+    parent: 2
+    name: 新增用户
+    code: admin_user_add
+    sort_index: 1
+    full_path: 1/2/3/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 4
+  fields:
+    parent: 2
+    name: 修改用户
+    code: admin_user_update
+    sort_index: 2
+    full_path: 1/2/4/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 5
+  fields:
+    parent: 2
+    name: 删除用户
+    code: admin_user_delete
+    full_path: 1/2/5/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 6
+  fields:
+    parent: 2
+    name: 查看用户
+    code: admin_user_get
+    sort_index: 3
+    full_path: 1/2/6/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 7
+  fields:
+    parent: 2
+    name: 禁用用户
+    code: admin_user_disable
+    sort_index: 4
+    full_path: 1/2/7/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 8
+  fields:
+    parent: 2
+    name: 启用用户
+    code: admin_user_enable
+    sort_index: 5
+    full_path: 1/2/8/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 9
+  fields:
+    parent: 2
+    name: 用户登录
+    code: admin_login
+    sort_index: 6
+    full_path: 1/2/9/
+    is_leaf: 1
+    created_at: 2018-01-01T00:00:00Z
+    updated_at: 2018-01-01T00:00:00Z
+- model: admin.permission
+  pk: 11
+  fields:
+    parent: 2
+    name: 重置其他用户密码
+    code: reset_user_password
+    sort_index: 8
+    full_path: 1/2/11/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 50
+  fields:
+    parent: 1
+    name: 角色管理
+    code: admin_role_group
+    sort_index: 2
+    full_path: 1/50/
+    is_leaf: 0
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 51
+  fields:
+    parent: 50
+    name: 添加角色
+    code: admin_role_add
+    sort_index: 1
+    full_path: 1/50/51/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 52
+  fields:
+    parent: 50
+    name: 修改角色
+    code: admin_role_update
+    sort_index: 2
+    full_path: 1/50/52/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 53
+  fields:
+    parent: 50
+    name: 删除角色
+    code: admin_role_delete
+    sort_index: 3
+    full_path: 1/50/53/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 54
+  fields:
+    parent: 50
+    name: 查看角色
+    code: admin_role_get
+    sort_index: 4
+    full_path: 1/50/54/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 60
+  fields:
+    parent: 1
+    name: 操作记录
+    code: record_group
+    sort_index: 3
+    full_path: 1/60/
+    is_leaf: 0
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 61
+  fields:
+    parent: 60
+    name: 操作记录查看
+    code: record_get
+    sort_index: 1
+    full_path: 1/60/61/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+- model: admin.permission
+  pk: 62
+  fields:
+    parent: 60
+    name: 操作记录导出
+    code: record_export
+    sort_index: 2
+    full_path: 1/60/62/
+    is_leaf: 1
+    created_at: 2018-12-12 00:00:00
+    updated_at: 2018-12-12 00:00:00
+# 超级管理员
+- model: admin.user
+  pk: 2
+  fields:
+    name: admin
+    password: $2b$12$eQt9nasDNwCN5d1AnyOzuevWPe75qrssRUv8v1YcwxPLDzVe4JUjm
+    is_super: 1
+    enable: 1
+    deleted: 0
+    created_at: 2018-01-01 00:00:00
+    updated_at: 2018-01-01 00:00:00
