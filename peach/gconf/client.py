@@ -278,7 +278,7 @@ class GConfClient:
 
     def _exec_callbacks(self, first):
         # process dataclass bind
-        for name, data in self.dataclasses.items:
+        for name, data in self.dataclasses.items():
             if name in self.conf_items:
                 data_new = from_dict(data_class=type(data), data=self.get_dict(name))
                 for field in fields(type(data)):
