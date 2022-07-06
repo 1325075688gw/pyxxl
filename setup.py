@@ -13,7 +13,7 @@ setup(
         "PyMySQL==1.0.2",
         "pymongo==3.12.3",
         "mongoengine==0.23.1",
-        "pycrypto==2.6.1",
+        "pycryptodome==3.15.0",
         "pbkdf2==1.3",
         "requests==2.22.0",
         "dacite==1.5.1",
