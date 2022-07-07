@@ -1,44 +1,108 @@
-#! -*- coding:utf-8 -*-
-import logging
-import sys
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import json
+import threading
 import time
+
+from dataclasses import dataclass, field
+import typing
+
+import pytest
 
 from .client import GConfClient
 
-root = logging.getLogger()
-root.setLevel(logging.DEBUG)
 
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-root.addHandler(handler)
+def callback(value):
+    print("========= callback" + value)
 
 
-def restart_redis(value):
-    logging.info("========= callback" + value)
+@dataclass
+class FacebookApp:
+    app_id: str
+    secret: str
+    brd: typing.List[str] = None
+    chn: typing.List[str] = None
 
 
-def test_a():
-    logging.info("====== begin test")
-    conf = GConfClient(
-        "http://3.1.171.240:8881/",
-        "YgLeBncBZSxXfrB5qJmvH-MEiKXlT75mxe-ByjQi",
-        "kZOL3l1QZGf5N9LRbsm5C7W8i3AwZtOhBYxYIE89",
+@dataclass
+class FacebookConf:
+    host: str = "https://graph.facebook.com"
+    apps: typing.List[FacebookApp] = field(default_factory=list)
+
+
+facebook_conf = FacebookConf()
+hostName = "localhost"
+serverPort = 8080
+
+mock_conf_value = {
+    "release": "20220101123",
+    "confs": [
+        {"name": "int_key", "value": "10"},
+        {
+            "name": "facebook.toml",
+            "value": """host="https://graph.facebook.com/mock/"
+[[apps]]
+  app_id = "hi"
+  secret = "gogo"
+            """,
+        },
+    ],
+}
+
+
+class MockServer(BaseHTTPRequestHandler):
+    first = True
+
+    def do_GET(self):
+        if MockServer.first:
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps(mock_conf_value).encode())
+            self.wfile.flush()
+            MockServer.first = False
+        else:
+            time.sleep(2)
+            mock_conf_value["confs"][0]["value"] = "777"
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(json.dumps(mock_conf_value).encode())
+            self.wfile.flush()
+
+
+host = "127.0.0.1"
+port = 8888
+
+
+@pytest.fixture()
+def http_server():
+    webServer = HTTPServer((host, port), MockServer)
+
+    def run():
+        print("====== Server started http://{}:{}".format(host, port))
+        webServer.serve_forever()
+
+    t = threading.Thread(target=run, daemon=True)
+    t.start()
+
+    yield "start gconf server"
+    webServer.server_close()
+    print("Server stopped.")
+
+
+def test_a(http_server):
+    gconf_client = GConfClient(
+        f"http://{host}:{port}/",
+        "xxxxxx",
+        "xxxxxxxx",
         "/tmp/pyconf/",
         full_pull_interval=20,
+        debug=False,
     )
+    gconf_client.bind_dataclass("facebook.toml", facebook_conf)
+    gconf_client.register_callbacks({"int_key": callback})
+    gconf_client.start()
 
-    conf.register_callbacks({"cd": restart_redis})
-    conf.start()
-
-    while True:
-        try:
-            logging.info(conf.get_int("cd", 33))
-        except Exception:
-            logging.exception("get conf fail: {}".format("a"))
-        time.sleep(5)
-
-
-if __name__ == "__main__":
-    test_a()
+    assert gconf_client.get_int("int_key") == 10
+    assert facebook_conf.host == "https://graph.facebook.com/mock/"
+    assert facebook_conf.apps[0].app_id == "hi"
+    time.sleep(5)
+    assert gconf_client.get_int("int_key") == 777
