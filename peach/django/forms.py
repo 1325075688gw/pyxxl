@@ -76,6 +76,19 @@ class LoadDumpOptions(Enum):
     name = 0
 
 
+class LocalDatetimeField(fields.DateTime):
+    """
+    将local时间转为带时区的utc时间
+    """
+    DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        dt = super()._deserialize(value, attr, data, **kwargs)
+        if timezone.is_naive(dt) and timezone.get_current_timezone():
+            dt = timezone.get_current_timezone().localize(dt)
+        return dt
+
+
 class EnumField(fields.Field):
     """
     枚举字段

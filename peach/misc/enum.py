@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class IntCodeEnum(int, Enum):
@@ -30,3 +30,15 @@ class IntCodeEnum(int, Enum):
             if e.code == code:
                 return e
         raise ValueError(f"code: [{code}] not in {cls.__name__}")
+
+
+class BroadcastTemplateType(IntEnum):
+    GAME = 1  # 游戏
+    PYRAMID = 2  # 推广员
+
+
+class BrandRiskType(IntEnum):
+    NEW = 1  # 新增切断
+    GAME = 2  # 游戏停服
+    WITHDRAW = 4  # 兑换屏蔽
+    PAY = 8  # 支付屏蔽
