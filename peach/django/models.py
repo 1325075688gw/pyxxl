@@ -129,8 +129,8 @@ class DictField(models.CharField):
     """
 
     def get_db_prep_save(self, value, connection):
-        if value is None:
-            value = dict()
+        if not value:
+            return None
         assert isinstance(value, dict)
         return json.dumps(value, cls=JsonEncoder)
 
