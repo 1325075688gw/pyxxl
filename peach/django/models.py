@@ -1,7 +1,10 @@
 import base64
+import dataclasses
 import json
 import typing
 from enum import Enum
+
+import dacite
 from django.conf import settings
 
 
@@ -172,6 +175,31 @@ class EnumField(EnumMix, models.CharField):
 
 class IntEnumField(EnumMix, models.SmallIntegerField):
     pass
+
+
+class DataclassField(DictField):
+    def __init__(self, base_type: typing.Type = None, *args, **kwargs):
+        self.base_type = base_type
+        super().__init__(*args, **kwargs)
+
+    def get_db_prep_save(self, value, connection):
+        if value is None:
+            return None
+
+        assert dataclasses.is_dataclass(value)
+        dict_v = dataclasses.asdict(value)
+        return super().get_db_prep_save(dict_v, connection)
+
+    def to_python(self, value):
+        if not value:
+            return None
+        dict_v = super().to_python(value)
+        return dacite.from_dict(
+            self.base_type, dict_v, config=dacite.Config(cast=[Enum])
+        )
+
+    def from_db_value(self, value, expression, connection):
+        return self.to_python(value)
 
 
 def paginate(query, page_no, page_size):
