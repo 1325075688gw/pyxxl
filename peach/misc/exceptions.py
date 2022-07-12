@@ -1,4 +1,7 @@
 import typing
+import logging
+from functools import wraps, partial
+from inspect import getfullargspec
 
 
 class BizErrorCode:
@@ -32,3 +35,30 @@ class BizException(Exception):
 
 class IllegalRequestException(Exception):
     pass
+
+
+def no_exception(func=None, biz_exc: BizException = None):
+    """
+    捕获程序异常并打印日志
+    使用场景：出现异常后不影响程序正常向后运行
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            params = getfullargspec(func).args
+            args_fields = params[: len(args)]
+            kwargs.update(dict(zip(args_fields, args)))  # 全部转换成关键字参数
+
+            logging.exception(
+                f"<exception catch>: {func.__name__} occur error: {str(e)}, params: {kwargs}!"
+            )
+            if biz_exc:
+                raise biz_exc
+            return None
+
+    if func is None:
+        return partial(no_exception, bizExc=biz_exc)
+    return wrapper
