@@ -1,4 +1,4 @@
-from gis.common import local_zh_hans
+from peach.misc import local_zh_hans
 
 _trans_default = {}
 
