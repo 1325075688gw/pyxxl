@@ -44,6 +44,7 @@ class GConfClient:
         :param cluster: 集群名称，默认为 default
         """
         self.debug = debug
+        self.running: bool = False
         self.conf_items = dict()
         self.callbacks = dict()
         self.dataclasses = dict()
@@ -73,6 +74,7 @@ class GConfClient:
         """
         启动客户端运行，主要执行任务：监控配置中心配置更改，和全量定期拉取同步最新全量配置。
         """
+        self.running = True
         if self.debug:
             _LOGGER.warn("Gconf is running under DEBUG mode")
             return
@@ -93,15 +95,33 @@ class GConfClient:
 
         threading.Thread(target=self._monitor_updates, daemon=True).start()
 
-    def register_callbacks(self, callback):
+    def bind_dataclass(self, name: str, data):
+        assert is_dataclass(data)
+        assert not inspect.isclass(data)
+        if self.running:
+            raise Exception(
+                f"gconf is already started, bind_dataclass is not allowed: {name}"
+            )
+        if name in self.dataclasses:
+            raise Exception(f"It is not allowed to bind duplicated dataclass: {name}")
+        _LOGGER.info(
+            f"gconf bind dataclass, name: {name}, dataclass: {data.__class__.__name__}"
+        )
+        self.dataclasses[name] = data
+
+    def register_callback(self, name, callback):
         """
         注册配置更新回调处理器
-        :param callback: dict<name, callback_func> name配置项名称，callback_func处理回调函数
         :return:
         """
-        if not callback:
-            return
-        self.callbacks.update(callback)
+        if self.running:
+            raise Exception(
+                f"gconf is already started, register_callbacks is not allowed: {name}"
+            )
+        _LOGGER.info(
+            f"gconf register callbacks, name: {name}, dataclass: {callback.__name__}"
+        )
+        self.callbacks[name] = callback
 
     def decorator(self):
         """
@@ -162,13 +182,6 @@ class GConfClient:
                 value = toml.loads(toml.dumps(toml.loads(raw)))
             self.conf_items[name] = value
             return value
-
-    def bind_dataclass(self, name: str, data):
-        assert is_dataclass(data)
-        assert not inspect.isclass(data)
-        if name in self.dataclasses:
-            raise Exception(f"It is not allowed to bind duplicated dataclass: {name}")
-        self.dataclasses[name] = data
 
     def get_value(self, name, default=None) -> str:
         value = self.conf_items.get(name)
