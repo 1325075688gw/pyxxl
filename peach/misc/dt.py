@@ -112,3 +112,14 @@ def at_start_of_month(time: datetime) -> datetime:
     """
     t = at_start_of_day(time)
     return t.replace(day=1)
+
+
+def last_month_first_day(local_time=None):
+    """
+    上月第一天时间
+    """
+    if not local_time:
+        local_time = local_now()
+    last_month = 12 if local_time.month == 1 else local_time.month - 1
+    last_year = local_time.year - 1 if last_month == 12 else local_time.year
+    return timezone.make_aware(datetime(last_year, last_month, 1))
