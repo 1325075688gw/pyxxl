@@ -98,7 +98,7 @@ def test_a(http_server):
         debug=False,
     )
     gconf_client.bind_dataclass("facebook.toml", facebook_conf)
-    gconf_client.register_callbacks({"int_key": callback})
+    gconf_client.register_callback("int_key", callback)
     gconf_client.start()
 
     assert gconf_client.get_int("int_key") == 10

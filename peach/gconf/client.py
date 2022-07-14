@@ -12,7 +12,7 @@ import typing
 from datetime import datetime
 
 import requests
-import toml
+import tomli
 from dacite import from_dict
 
 from .six import urlparse
@@ -176,11 +176,17 @@ class GConfClient:
             return value
         else:
             raw = self.get_value(name, default)
-            if name.endswith("json"):
-                value = json.loads(raw)
-            elif name.endswith("toml"):
-                value = toml.loads(toml.dumps(toml.loads(raw)))
-            self.conf_items[name] = value
+            try:
+                if name.endswith("json"):
+                    value = json.loads(raw)
+                elif name.endswith("toml"):
+                    value = tomli.loads(raw)
+                self.conf_items[name] = value
+            except Exception:
+                _LOGGER.exception(
+                    f"gconf get_dict fail, the value has invalid format: {name}"
+                )
+                raise
             return value
 
     def get_value(self, name, default=None) -> str:

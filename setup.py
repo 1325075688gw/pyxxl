@@ -8,7 +8,7 @@ setup(
     install_requires=[
         "user_agents==1.1.0",
         "pyyaml==6.0.0",
-        "toml==0.10.0",
+        "tomli==2.0.1",
         "django==4.0.5",
         "PyMySQL==1.0.2",
         "pymongo==3.12.3",
