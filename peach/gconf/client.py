@@ -10,11 +10,13 @@ import threading
 import time
 import typing
 from datetime import datetime
+from enum import Enum
 
 import requests
 import tomli
-from dacite import from_dict
+from dacite import from_dict, Config
 
+from peach.misc import dt
 from .six import urlparse
 
 _LOGGER = logging.getLogger(__name__)
@@ -299,7 +301,17 @@ class GConfClient:
         # process dataclass bind
         for name, data in self.dataclasses.items():
             if name in self.conf_items:
-                data_new = from_dict(data_class=type(data), data=self.get_dict(name))
+                data_new = from_dict(
+                    data_class=type(data),
+                    data=self.get_dict(name),
+                    config=Config(
+                        cast=[Enum],
+                        type_hooks={
+                            datetime: lambda t: dt.from_timestamp(int(int(t) / 1000)),
+                            int: int,
+                        },
+                    ),
+                )
                 for field in fields(type(data)):
                     setattr(data, field.name, getattr(data_new, field.name))
 
