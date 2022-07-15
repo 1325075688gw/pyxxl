@@ -4,6 +4,7 @@ from dataclasses import is_dataclass, asdict
 from datetime import datetime, date, time
 from enum import Enum
 
+from bson import ObjectId
 from django.utils import timezone
 
 
@@ -23,5 +24,7 @@ class JsonEncoder(json.JSONEncoder):
             return str(o.value)
         elif is_dataclass(o):
             return asdict(o)
+        elif isinstance(o, ObjectId):
+            return str(o)
         else:
             return super().default(o)
