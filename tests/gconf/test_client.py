@@ -8,7 +8,7 @@ import typing
 
 import pytest
 
-from .client import GConfClient
+from peach.gconf.client import GConfClient
 
 
 def callback(value):

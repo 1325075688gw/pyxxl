@@ -4,7 +4,7 @@ setup(
     name="peach",
     version="0.1.0",
     description="python tools",
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     install_requires=[
         "user_agents==1.1.0",
         "pyyaml==6.0.0",
