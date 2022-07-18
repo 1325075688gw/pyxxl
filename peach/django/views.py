@@ -1,3 +1,6 @@
+import typing
+from dataclasses import field, dataclass
+
 from django.views import View
 
 
@@ -11,17 +14,7 @@ class BaseView(View):
         return response
 
 
-# @dataclass
-# class PaginationResponse:
-#     total: int = 0
-#     items: typing.List[typing.Any] = field(default_factory=list)
-
-
+@dataclass
 class PaginationResponse:
-    def __init__(self, total, items, **kwargs):
-        assert total >= 0
-        if items:
-            assert isinstance(items, list)
-        self.total = total
-        self.items = items
-        self.kwargs = kwargs or dict()
+    total: int = 0
+    items: typing.List[typing.Any] = field(default_factory=list)
