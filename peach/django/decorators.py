@@ -4,7 +4,7 @@ from django.conf import settings
 
 
 from django.http import HttpRequest, QueryDict
-from marshmallow import ValidationError
+from marshmallow import ValidationError, EXCLUDE
 
 from peach.misc.exceptions import IllegalRequestException
 
@@ -35,7 +35,7 @@ def validate_parameters(schema: object) -> object:
                         "content-type must be application/json or application/x-www-form-urlencoded",
                     )
             try:
-                request.cleaned_data = schema().load(body)
+                request.cleaned_data = schema(unknown=EXCLUDE).load(body)
             except ValidationError as err:
                 raise IllegalRequestException(
                     err.messages if settings.DEBUG else "Bad Request"
