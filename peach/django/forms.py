@@ -57,7 +57,7 @@ class CNDatetimeField(fields.DateTime):
     def _deserialize(self, value, attr, data, **kwargs):
         dt = super()._deserialize(value, attr, data, **kwargs)
         if timezone.is_naive(dt) and timezone.get_current_timezone():
-            dt = timezone.get_current_timezone().localize(dt)
+            dt = dt.replace(tzinfo=timezone.get_current_timezone())
         return dt
 
 
@@ -80,12 +80,13 @@ class LocalDatetimeField(fields.DateTime):
     """
     将local时间转为带时区的utc时间
     """
+
     DEFAULT_FORMAT = "%Y-%m-%d %H:%M:%S"
 
     def _deserialize(self, value, attr, data, **kwargs):
         dt = super()._deserialize(value, attr, data, **kwargs)
         if timezone.is_naive(dt) and timezone.get_current_timezone():
-            dt = timezone.get_current_timezone().localize(dt)
+            dt = dt.replace(tzinfo=timezone.get_current_timezone())
         return dt
 
 
