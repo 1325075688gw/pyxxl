@@ -9,7 +9,7 @@ from django.utils.deprecation import MiddlewareMixin
 
 from peach.misc.util import qdict_to_dict
 from peach.i18n.django import get_text
-from peach.misc.exceptions import BizException
+from peach.misc.exceptions import BizException, IllegalRequestException
 from peach.django.json import JsonEncoder
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,7 +33,17 @@ class ApiMiddleware(MiddlewareMixin):
     def process_exception(self, request, exception):
         print_msg = exception.__class__.__name__ + " : " + str(exception)
         user_id = request.user_id if hasattr(request, "user_id") else None
-        if isinstance(exception, BizException):
+        if isinstance(exception, IllegalRequestException):
+            if settings.DEBUG:
+                _LOGGER.exception(
+                    f"IllegalRequestException: {print_msg}, path: {request.path}, uid: {user_id}"
+                )
+            else:
+                _LOGGER.warning(
+                    f"IllegalRequestException: {print_msg}, path: {request.path}, uid: {user_id}"
+                )
+            return HttpResponse(str(exception), status=400)
+        elif isinstance(exception, BizException):
             msg = get_text(f"err_{exception.error_code.code}")
             response = dict(
                 status=exception.error_code.code,
