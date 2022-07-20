@@ -33,11 +33,16 @@ def get_local_lan() -> str:
 
 
 def get_default_lan() -> str:
+    """
+    Local > settings.LANGUAGE_CODE > "en"
+    """
     lan = get_local_lan()
     if lan:
         return lan
 
-    return settings.LANGUAGE_CODE
+    return (
+        settings.LANGUAGE_CODE if hasattr(settings, "LANGUAGE_CODE") else _DEFAULT_LAN
+    )
 
 
 def get_text(msg_id: str, lan: str = None, **kwargs):
@@ -58,12 +63,19 @@ class LocaleMiddleware(MiddlewareMixin):
     _header_req_lan = "HTTP_ACCEPT_LANGUAGE"
 
     def process_request(self, request):
-        lan = (
-            request.META.get(LocaleMiddleware._header_req_lan) or settings.LANGUAGE_CODE
-        )
-        if lan:
-            set_local_lan(lan)
-            request.LANGUAGE_CODE = lan
+        clear_local_lan()
+        lan = request.META.get(LocaleMiddleware._header_req_lan)
+        if not _RES:
+            _LOGGER.error(
+                "django i18n plugin : load_i18n_resource must be executed before the service starts"
+            )
+            return
+        if not lan:
+            lan = settings.LANGUAGE_CODE
+        if lan not in _RES.get_all_lans():
+            lan = _DEFAULT_LAN
+        set_local_lan(lan)
+        request.LANGUAGE_CODE = lan
 
     def process_response(self, request, response):
         response.setdefault("Content-Language", get_default_lan())
