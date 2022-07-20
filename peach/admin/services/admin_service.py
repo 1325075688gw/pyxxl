@@ -1,11 +1,13 @@
 import copy
 import uuid
 from fnmatch import fnmatch
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import bcrypt
 from django.db import transaction
 from django.db.models import F
+
+from peach.misc import dt
 
 from ..exceptions import (
     ERROR_USER_NOT_EXISTS,
@@ -96,7 +98,7 @@ def update_user_login_count(user_id):
 
 
 def update_user_last_login_time(user_id):
-    User.objects.filter(pk=user_id).update(last_login_at=datetime.now())
+    User.objects.filter(pk=user_id).update(last_login_at=dt.local_now())
 
 
 def get_user_by_id(user_id, check_enable=True, with_roles=False, check_deleted=True):
@@ -167,7 +169,7 @@ def create_token(user_id):
 def get_user_by_token(token):
     token = Token.objects.filter(
         token=token,
-        created_at__gt=datetime.now() - timedelta(hours=6),
+        created_at__gt=dt.local_now() - timedelta(hours=6),
         user__enable=True,
     ).first()
     if not token:
