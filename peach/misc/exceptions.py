@@ -1,3 +1,4 @@
+import types
 import typing
 import logging
 from functools import wraps, partial
@@ -31,6 +32,16 @@ class BizException(Exception):
 
     def __str__(self):
         return f"code: {self.error_code.code}, msg: {self.error_code.message}"
+
+
+def load_all_codes(module: types.ModuleType) -> typing.Set[int]:
+    codes: typing.Set[int] = set()
+    for attr in module.__dict__.values():
+        if isinstance(attr, BizErrorCode):
+            codes.add(attr.code)
+        elif isinstance(attr, BizException):
+            codes.add(attr.error_code.code)
+    return codes
 
 
 class IllegalRequestException(Exception):

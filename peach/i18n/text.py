@@ -42,12 +42,11 @@ class ResouceLoader:
             )
         if row[0].strip() != "msg_id":
             raise I18NException("The languages resource file has invalid format data")
-        self._headers[0] = "-"
         for col_num in range(1, len(row)):
             self._headers[col_num] = row[col_num].strip()
 
     def _parse_texts(self, row_num: int, row: typing.List[str]):
-        if len(row) != len(self._headers):
+        if len(row) - 1 != len(self._headers):
             raise I18NException(f"The Data on {row_num} is missing some languages")
         msg_id = row[0].strip()
         if msg_id in self._texts:
@@ -67,7 +66,10 @@ class ResouceLoader:
         text = lans[lan]
         return text.format(**kwargs) if kwargs else text
 
-    # for debug
+    def get_all_lans(self) -> typing.Set[str]:
+        return set(self._headers.values())
+
+    # just for debug
     def print_all(self):
         print(f"headers: {self._headers}")
         print(f"texts: {self._texts}")
