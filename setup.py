@@ -24,5 +24,6 @@ setup(
         "pymemcache==3.5.2",
         "confluent-kafka==1.7.0",
         "marshmallow==3.5.1",
+        "pandas==1.4.2",
     ],
 )
