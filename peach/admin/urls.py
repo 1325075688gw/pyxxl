@@ -17,6 +17,7 @@ urlpatterns = [
     # 角色管理
     path("roles/", views.RoleListView.as_view()),
     path("roles/<int:role_id>/", views.RoleDetailView.as_view()),
+    path("roles/get_all/", views.RoleAllView.as_view()),
     # 权限管理
     path("permissions/", views.PermissionListView.as_view()),
     # 操作记录

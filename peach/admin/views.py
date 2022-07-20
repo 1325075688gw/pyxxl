@@ -189,6 +189,13 @@ class RoleDetailView(BaseView):
         return dict(id=role_id)
 
 
+class RoleAllView(BaseView):
+    @method_decorator(require_login)
+    def get(self, request):
+        role = admin_service.get_all_roles()
+        return role
+
+
 #######################################
 #######################################
 # 权限管理

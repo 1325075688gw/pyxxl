@@ -359,6 +359,11 @@ def list_roles(criteria: RoleListCriteria):
     )
 
 
+def get_all_roles():
+    query = Role.objects.all()
+    return [{"role_id": e.id, "role_name": e.name} for e in query]
+
+
 def _bind_role_and_permissions(role, permissions):
     if not permissions:
         return
