@@ -61,7 +61,15 @@ class ReportClient:
     FileType = _FileType
     report_types = dict()
 
-    def __init__(self, server_host, app_key, app_secret, temp_file_dir=None):
+    def __init__(
+        self, server_host, app_key, app_secret, temp_file_dir=None, debug=False
+    ):
+
+        self.debug = debug
+        self.cur_task = dict()  # key task_id, value ReportTaskInfo
+
+        if self.debug:
+            return
 
         assert server_host and isinstance(server_host, str)
         self.server_host = server_host
@@ -83,7 +91,6 @@ class ReportClient:
         self.meta_file = os.path.join(temp_file_dir, "meta")
 
         self.engines = _ENGINES
-        self.cur_task = dict()  # key task_id, value ReportTaskInfo
 
     def add_report_task(
         self,
@@ -123,6 +130,8 @@ class ReportClient:
         return self._do_get(self.server_host + url, dict(task_id=task_id))
 
     def load_cur_task(self):
+        if self.debug:
+            return
         self._load_conf_from_local()
         self.fetch_task()
 
