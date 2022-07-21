@@ -12,6 +12,12 @@ class DBaseDocument(Document):
         self.updated_at = dt.local_now()
         return super().save(*args, **kwargs)
 
+    def to_dict(self):
+        data = self.to_mongo()
+        if data and "_id" in data:
+            data["id"] = data.pop("_id")
+        return data
+
     meta = {"abstract": True, "indexes": ["updated_at"]}
 
 
@@ -24,5 +30,11 @@ class DBaseDynamicDocument(DynamicDocument):
             self.created_at = dt.local_now()
         self.updated_at = dt.local_now()
         return super().save(*args, **kwargs)
+
+    def to_dict(self):
+        data = self.to_mongo()
+        if data and "_id" in data:
+            data["id"] = data.pop("_id")
+        return data
 
     meta = {"abstract": True, "indexes": ["updated_at"]}
