@@ -44,6 +44,16 @@ def as_mts(time: datetime):
     return int(time.timestamp() * 1000)
 
 
+def utc_to_ts(dt):
+    """utc时间 to 时间戳"""
+    return int(dt.timestamp())
+
+
+def ts_to_utc(ts):
+    """时间戳转utc时间"""
+    return datetime.utcfromtimestamp(ts)
+
+
 def utc_to_local(dt):
     """
     UTC时间转为本地时间
@@ -53,6 +63,13 @@ def utc_to_local(dt):
     if timezone.is_aware(dt):
         return dt.astimezone(LOCAL_TZ)
     return timezone.make_aware(dt, UTC_TZ).astimezone(LOCAL_TZ)
+
+
+def utc_to_local_str(dt, fmt="%Y-%m-%d %H:%M:%S"):
+    """UTC naive 时间转本地时间字符串 常用于mongo查询到的时间"""
+    if not dt:
+        return ""
+    return utc_to_local(dt).strftime(fmt)
 
 
 def parse_datetime(date_string: str) -> datetime:
@@ -123,8 +140,3 @@ def last_month_first_day(local_time=None):
     last_month = 12 if local_time.month == 1 else local_time.month - 1
     last_year = local_time.year - 1 if last_month == 12 else local_time.year
     return timezone.make_aware(datetime(last_year, last_month, 1))
-
-
-def utc_to_ts(dt):
-    """utc时间 to 时间戳"""
-    return int(dt.timestamp())
