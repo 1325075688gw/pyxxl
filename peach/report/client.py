@@ -35,11 +35,11 @@ class _FileType(Enum):
     XLSX = "xlsx"
 
 
-_ENGINES = {_FileType.CSV.value: Csv, _FileType.XLSX.value: Xlsx}
+_ENGINES = {_FileType.CSV: Csv, _FileType.XLSX: Xlsx}
 
 _FILE_EXTENSION = {
-    _FileType.CSV.value: ".csv",
-    _FileType.XLSX.value: ".xlsx",
+    _FileType.CSV: ".csv",
+    _FileType.XLSX: ".xlsx",
 }
 
 ReportTaskInfo = namedtuple(
