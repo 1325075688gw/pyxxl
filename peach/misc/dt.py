@@ -70,7 +70,7 @@ def parse_datetime(date_string: str) -> datetime:
     if value is None:
         raise ValueError(f"date_string must be match any format of: {fmts}")
     if not value.tzinfo:
-        value = timezone.get_current_timezone().localize(value)
+        value = value.replace(tzinfo=timezone.get_current_timezone())
     return value
 
 
