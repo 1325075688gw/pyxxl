@@ -123,3 +123,8 @@ def last_month_first_day(local_time=None):
     last_month = 12 if local_time.month == 1 else local_time.month - 1
     last_year = local_time.year - 1 if last_month == 12 else local_time.year
     return timezone.make_aware(datetime(last_year, last_month, 1))
+
+
+def utc_to_ts(dt):
+    """utc时间 to 时间戳"""
+    return int(dt.timestamp())
