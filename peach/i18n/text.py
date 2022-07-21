@@ -35,24 +35,27 @@ class ResouceLoader:
 
         _LOGGER.info("Load i18n resource success")
 
-    def _parse_headers(self, row: typing.List[str]):
-        if len(row) < 3:
+    def _parse_headers(self, headers: typing.List[str]):
+        self._check_headers_format(headers)
+        for col_num in range(2, len(headers)):
+            self._headers[col_num] = headers[col_num].strip()
+
+    def _check_headers_format(self, headers: typing.List[str]):
+        if len(headers) <= 3 and headers[:3] != ["Module", "msg_id", "zh"]:
             raise I18NException(
-                "The languages resource must contains at least 3 languages"
+                "The languages resource file has invalid format data, the headers must contains: Module, msg_id, zh"
             )
-        if row[0].strip() != "msg_id":
-            raise I18NException("The languages resource file has invalid format data")
-        for col_num in range(1, len(row)):
-            self._headers[col_num] = row[col_num].strip()
 
     def _parse_texts(self, row_num: int, row: typing.List[str]):
-        if len(row) - 1 != len(self._headers):
-            raise I18NException(f"The Data on {row_num} is missing some languages")
-        msg_id = row[0].strip()
+        if len(row) - 2 != len(self._headers):
+            raise I18NException(
+                f"The data on {row_num} does not match the headers. row: {row}, headers: {self._headers}"
+            )
+        msg_id = row[1].strip()
         if msg_id in self._texts:
             raise I18NException(f"The msg_id in row {row_num} is duplicated")
         self._texts[msg_id] = lans = {}
-        for col_num in range(1, len(row)):
+        for col_num in range(2, len(row)):
             lans[self._headers[col_num]] = row[col_num].strip()
 
     def get_text(self, msg_id, lan, **kwargs) -> str:
