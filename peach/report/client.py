@@ -1,16 +1,19 @@
 #! -*- coding:utf-8 -*-
 import hashlib
-import inspect
 import json
 import logging
 import os
 import pickle
 import uuid
+import dataclasses
 from collections import namedtuple
+from datetime import datetime
 from enum import unique, Enum
 from functools import wraps
+from typing import Type, Any
 
 import requests
+from dacite import from_dict, Config
 from requests import RequestException
 
 from . import filelock
@@ -165,12 +168,11 @@ class ReportClient:
                         filter_params = json.loads(report_task_info.filter_params)
                     else:
                         filter_params = dict()
-
+                    filter_params["page_no"] = page_no
+                    filter_params["page_size"] = report_task_info.page_size
                     items_count = 0
                     while True:
-                        count, header, items = func(
-                            page_no, report_task_info.page_size, filter_params
-                        )
+                        count, header, items = func(filter_params)
                         engine.process_page(items, header=header)
 
                         if not items:
@@ -324,16 +326,13 @@ class ReportClient:
         params["sign"] = sign
 
     @staticmethod
-    def decorator():
-        def report_decorator(func):
-            func_args = inspect.getfullargspec(func).args
-            need_args = ["page_size", "page_no"]
-            if not set(need_args).issubset(set(func_args)):
-                raise ValueError("report func need params page_size, page_no")
+    def decorator(data_class):
+        assert dataclasses.is_dataclass(data_class)
 
+        def report_decorator(func):
             @wraps(func)
-            def wrapper(*args, **kwargs):
-                return func(*args, **kwargs)
+            def wrapper(filter_params):
+                return func(_dict_to_dto(filter_params, data_class=data_class))
 
             return wrapper
 
@@ -342,3 +341,18 @@ class ReportClient:
     @staticmethod
     def register(report_type, func):
         ReportClient.report_types[report_type] = func
+
+
+##################################################################################
+def _dict_to_dto(data: dict, data_class: Type) -> Any:
+    return from_dict(
+        data_class=data_class,
+        data=data,
+        config=Config(
+            cast=[Enum],
+            type_hooks={
+                datetime: lambda t: dt.parse_datetime(t),
+                int: int,
+            },
+        ),
+    )
