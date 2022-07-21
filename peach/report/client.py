@@ -17,6 +17,7 @@ from dacite import from_dict, Config
 from requests import RequestException
 
 from . import filelock
+from .dtos import TaskListCriteria
 from .engines import Csv, Xlsx
 from .retry import retry
 
@@ -120,12 +121,12 @@ class ReportClient:
         )
         return self._rpc_upload_task(**params)
 
-    def list_tasks(self, user_id=None, page_size=None, page_no=None, report_type=None):
+    def list_tasks(self, criteria: TaskListCriteria):
         return self._rpc_list_task(
-            page_size=page_size,
-            page_no=page_no,
-            user_id=user_id,
-            report_type=report_type,
+            page_size=criteria.page_size,
+            page_no=criteria.page_no,
+            user_id=criteria.user_id,
+            report_type=criteria.report_type,
         )
 
     def get_download_url(self, task_id):

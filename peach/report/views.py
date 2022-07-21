@@ -8,13 +8,15 @@ from peach.misc.exceptions import BizException
 
 from .api import report_client
 from .forms import TaskListSchema
+from .dtos import TaskListCriteria
 
 
 class ReportDogTaskView(BaseView):
     @method_decorator(require_login)
     @method_decorator(validate_parameters(TaskListSchema))
-    def get(self, request, cleaned_data):
-        res = report_client.list_tasks(request.user_id, **cleaned_data)
+    def get(self, request, cleaned_data: TaskListCriteria):
+        cleaned_data.user_id = request.user_id
+        res = report_client.list_tasks(cleaned_data)
         return res
 
 
