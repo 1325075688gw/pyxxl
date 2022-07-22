@@ -220,7 +220,7 @@ class ReportClient:
     def _upload_file(self, task_id, items_count=None):
         url = "upload_file/"
         file_path = os.path.join(self.export_file_dir, self.cur_task[task_id].file_name)
-
+        _LOGGER.info(f"upload file: {file_path}")
         with open(file_path, "rb") as f:
             files = {"export_file": f}
 
