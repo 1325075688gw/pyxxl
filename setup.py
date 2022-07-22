@@ -26,5 +26,6 @@ setup(
         "marshmallow==3.5.1",
         "pandas==1.4.2",
         "boto3==1.24.31",
+        "openpyxl==3.0.10",
     ],
 )

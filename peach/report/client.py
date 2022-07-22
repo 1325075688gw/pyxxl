@@ -73,6 +73,7 @@ class ReportClient:
         self.cur_task = dict()  # key task_id, value ReportTaskInfo
 
         if self.debug:
+            _LOGGER.warning("Report is running under DEBUG mode")
             return
 
         assert server_host and isinstance(server_host, str)
@@ -122,12 +123,7 @@ class ReportClient:
         return self._rpc_upload_task(**params)
 
     def list_tasks(self, criteria: TaskListCriteria):
-        return self._rpc_list_task(
-            page_size=criteria.page_size,
-            page_no=criteria.page_no,
-            user_id=criteria.user_id,
-            report_type=criteria.report_type,
-        )
+        return self._rpc_list_task(criteria)
 
     def get_download_url(self, task_id):
         url = "get_download_url/"
@@ -148,7 +144,8 @@ class ReportClient:
     def _executor(self):
         for task_id in list(self.cur_task.keys()):
             try_count = 0
-            while try_count < MAX_RETRY_COUNT:
+            success = False
+            while try_count < MAX_RETRY_COUNT or success:
                 try:
                     report_task_info = self.cur_task[task_id]
                     func = ReportClient.report_types[report_task_info.report_type]
@@ -160,7 +157,7 @@ class ReportClient:
                     if os.path.exists(file_name):
                         os.remove(file_name)
 
-                    engine = self.engines[report_task_info.file_type](
+                    engine = self.engines[self.FileType(report_task_info.file_type)](
                         file_name, mode="a+"
                     )
 
@@ -184,9 +181,15 @@ class ReportClient:
                             break
                     engine.export()
                     self._upload_file(task_id, items_count)
-                    break
-                except Exception:
+                    success = True
+                except Exception as e:
                     try_count += 1
+                    _LOGGER.exception(
+                        f"cached executor export task: {e}, {task_id} - {try_count}",
+                        exc_info=True,
+                    )
+            if not success:
+                self._rpc_update_task(task_id)
             del self.cur_task[task_id]
             self._save_conf_to_local()
 
@@ -227,17 +230,9 @@ class ReportClient:
                 files=files,
             )
 
-    def _rpc_list_task(
-        self, page_no=None, page_size=None, user_id=None, report_type=None
-    ):
+    def _rpc_list_task(self, criteria: TaskListCriteria):
         url = "task/"
-        params = {
-            "page_no": page_no,
-            "page_size": page_size,
-            "user_id": user_id,
-            "report_type": report_type,
-        }
-        return self._do_get(self.server_host + url, params)
+        return self._do_get(self.server_host + url, dataclasses.asdict(criteria))
 
     def _rpc_fetch_task(self):
         url = "fetch_task/"
@@ -262,6 +257,10 @@ class ReportClient:
             )
 
         self._update_cur_task(res)
+
+    def _rpc_update_task(self, task_id):
+        url = "task/"
+        return self._do_put(self.server_host + url, dict(task_id=task_id))
 
     def _gen_filename(self, file_type):
         return str(uuid.uuid4()) + _FILE_EXTENSION[file_type]
@@ -299,6 +298,11 @@ class ReportClient:
     def _do_post(self, url, params, files=None):
         self._add_sign(params)
         resp = requests.post(url, data=params, files=files, timeout=5)
+        return self._decode_response(url, params, resp)
+
+    def _do_put(self, url, params):
+        self._add_sign(params)
+        resp = requests.put(url, data=params, timeout=5)
         return self._decode_response(url, params, resp)
 
     def _decode_response(self, url, params, resp):
@@ -341,6 +345,10 @@ class ReportClient:
 
     @staticmethod
     def register(report_type, func):
+        if report_type in ReportClient.report_types:
+            raise Exception(
+                f"It is not allowed to register duplicated report_type: {report_type}"
+            )
         ReportClient.report_types[report_type] = func
 
 

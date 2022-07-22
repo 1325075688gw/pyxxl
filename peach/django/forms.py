@@ -19,6 +19,7 @@ class PaginationSchema(Schema):
 
     page_no = fields.Integer(missing=1)
     page_size = fields.Integer(missing=30)
+    return_total = fields.Boolean(missing=True)
     export = fields.Boolean(missing=False)
 
     @validates("page_no")
@@ -40,6 +41,7 @@ class PaginationSchema(Schema):
         criteria.page_no = data["page_no"]
         criteria.page_size = data["page_size"]
         criteria.export = data["export"]
+        criteria.return_total = data["return_total"]
         return criteria
 
     @abstractmethod

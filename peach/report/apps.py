@@ -30,3 +30,4 @@ class ReportConfig(AppConfig):
                 mod = importlib.import_module(mod_path)
                 func = getattr(mod, callback_name)
                 report_client.register(report_type, func)
+                _LOGGER.info(f"registry report task: {report_type} - {func_path}")
