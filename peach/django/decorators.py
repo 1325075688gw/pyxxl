@@ -25,11 +25,14 @@ def validate_parameters(schema: object) -> object:
                 body = QueryDict(request.META["QUERY_STRING"])
                 body = json.loads(body.get("p")) if body.get("p") else body
             else:
-                body = request.body.decode()
                 if content_type.startswith("application/json"):
+                    body = request.body.decode()
                     body = json.loads(body) if body else dict()
                 elif content_type == "application/x-www-form-urlencoded":
+                    body = request.body.decode()
                     body = QueryDict(body)
+                elif content_type == "multipart/form-data":
+                    body = request.POST
                 else:
                     raise IllegalRequestException(
                         "content-type must be application/json or application/x-www-form-urlencoded",
