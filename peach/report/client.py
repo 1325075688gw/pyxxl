@@ -142,10 +142,11 @@ class ReportClient:
         self._executor()
 
     def _executor(self):
+        _LOGGER.info(f"start export tasks: {self.cur_task} now: {dt.local_now()}")
         for task_id in list(self.cur_task.keys()):
             try_count = 0
             success = False
-            while try_count < MAX_RETRY_COUNT or success:
+            while try_count < MAX_RETRY_COUNT and not success:
                 try:
                     report_task_info = self.cur_task[task_id]
                     func = ReportClient.report_types[report_task_info.report_type]
@@ -189,8 +190,12 @@ class ReportClient:
                         exc_info=True,
                     )
             if not success:
-                self._rpc_update_task(task_id)
+                # self._rpc_update_task(task_id)
+                pass
             del self.cur_task[task_id]
+            _LOGGER.info(
+                f"export task_id: {task_id} finished, tasks: {len(self.cur_task)}, now: {dt.local_now()}"
+            )
             self._save_conf_to_local()
 
     def _update_cur_task(self, tasks):
@@ -292,16 +297,19 @@ class ReportClient:
 
     def _do_get(self, url, params):
         self._add_sign(params)
+        _LOGGER.info("before get url: {}, params: {}".format(url, params))
         resp = requests.get(url, params, timeout=5)
         return self._decode_response(url, params, resp)
 
     def _do_post(self, url, params, files=None):
         self._add_sign(params)
+        _LOGGER.info("before post url: {}, params: {}".format(url, params))
         resp = requests.post(url, data=params, files=files, timeout=5)
         return self._decode_response(url, params, resp)
 
     def _do_put(self, url, params):
         self._add_sign(params)
+        _LOGGER.info("before put url: {}, params: {}".format(url, params))
         resp = requests.put(url, data=params, timeout=5)
         return self._decode_response(url, params, resp)
 
