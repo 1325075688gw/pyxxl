@@ -109,5 +109,4 @@ def validate_response(msg, known_biz_errs: typing.List[int] = None):
         if known_biz_errs and code in known_biz_errs:
             return
         else:
-            # raise IllegalRequestException(f"code: {code} - msg: {msg.header.msg}")
-            raise BizException(msg.header.status, msg.header.msg)
+            raise IllegalRequestException(f"code: {code} - msg: {msg.header.msg}")
