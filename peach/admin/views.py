@@ -38,7 +38,7 @@ from peach.report.api import report_client
 class RegisterView(BaseView):
     @method_decorator(validate_parameters(RegisterSchema))
     def post(self, request, cleaned_data):
-        user = admin_service.add_user(**cleaned_data, enable=False)
+        user = admin_service.add_user(**cleaned_data, enable=True)
         return user
 
 
@@ -71,7 +71,7 @@ class UserInfoView(BaseView):
 
 class UserUpdatePasswordView(BaseView):
     @method_decorator(require_login)
-    @method_decorator(require_vcode)
+    # @method_decorator(require_vcode)
     @method_decorator(validate_parameters(UpdateUserPasswordSchema))
     def put(self, request, cleaned_data):
         admin_service.reset_password_after_verify_old_success(
@@ -82,7 +82,7 @@ class UserUpdatePasswordView(BaseView):
 
 class UserResetPasswordView(BaseView):
     @method_decorator(require_login)
-    @method_decorator(require_vcode)
+    # @method_decorator(require_vcode)
     @method_decorator(check_permission("reset_user_password"))
     def put(self, request, user_id):
         admin_service.reset_password(user_id, DEFAULT_PASSWORD)
