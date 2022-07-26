@@ -1,3 +1,5 @@
+from dataclasses import asdict
+
 from django.utils.decorators import method_decorator
 
 from .const import DEFAULT_PASSWORD
@@ -24,7 +26,8 @@ from .helper import wrapper_record_info
 from .services import admin_service
 from peach.django.decorators import validate_parameters
 from peach.django.views import BaseView, PaginationResponse
-
+from peach.report import ReportClient
+from peach.report.api import report_client
 
 #######################################
 #######################################
@@ -208,6 +211,14 @@ class PermissionListView(BaseView):
         return dict(permissions=tree)
 
 
+class ResourceOptionView(BaseView):
+    @method_decorator(require_login)
+    # @method_decorator(check_permission('record_get'))
+    def get(self, request):
+        resource_map = admin_service.get_resource_map()
+        return [e for e in resource_map]
+
+
 #######################################
 #######################################
 # 操作记录管理
@@ -226,11 +237,10 @@ class RecordListView(BaseView):
 
     @method_decorator(check_permission("record_export"))
     def export(self, request, cleaned_data: RecordListCriteria):
-        cleaned_data.export = None
-        # filename = admin_service.export_record(cleaned_data)
-        # if os.path.isfile(f"{settings.EXPORT_PATH}{filename}"):
-        #     response = HttpResponse()
-        #     response["X-Accel-Redirect"] = f"/export_data/{filename}"
-        #     return response
-        # else:
-        #     raise BizException(ERROR_EXPORT_REPORT_FAILED)
+        res = report_client.add_report_task(
+            report_type="admin_record",
+            file_type=ReportClient.FileType.XLSX,
+            user_id=request.user_id,
+            filter_params=asdict(cleaned_data),
+        )
+        return dict(task_id=res["id"])

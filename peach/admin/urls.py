@@ -22,6 +22,7 @@ urlpatterns = [
     path("permissions/", views.PermissionListView.as_view()),
     # 操作记录
     path("record/", views.RecordListView.as_view()),
+    path("option/resources/", views.ResourceOptionView.as_view()),
     # report_dog
     # path("", include("gis.common.report_dog.urls")),
 ]

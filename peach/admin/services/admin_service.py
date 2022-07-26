@@ -7,7 +7,9 @@ import bcrypt
 from django.db import transaction
 from django.db.models import F
 
+from peach.report.api import report_decorator
 from peach.misc import dt
+from peach.admin.const import ActionDesc
 
 from ..exceptions import (
     ERROR_USER_NOT_EXISTS,
@@ -461,6 +463,15 @@ def get_total_permission_tree():
     return result
 
 
+def get_resource_map():
+    name_code_map = (
+        Permission.objects.filter(is_leaf=True)
+        .values_list("parent__name", "parent__code")
+        .order_by("parent__name")
+    )
+    return dict(name_code_map)
+
+
 ALL_PERMISSION_CACHE = None
 
 
@@ -484,6 +495,11 @@ def get_permission_by_code(code):
     if not permission:
         raise BizException(ERROR_PERMISSION_NOT_EXISTS, code)
     return permission.to_dict()
+
+
+def get_permission_parent_name_map():
+    permission = Permission.objects.values_list("code", "parent__name")
+    return dict(permission)
 
 
 def _get_permission(permission_id):
@@ -572,42 +588,23 @@ def get_record_list(criteria: RecordListCriteria):
     )
 
 
+@report_decorator(RecordListCriteria)
 def export_record(criteria: RecordListCriteria):
-    pass
-    # _, items = get_record_list(criteria)
-    # workbook = openpyxl.Workbook()
-    # worksheet = workbook.active
-    # # table head
-    # headers = ["操作时间", "操作人", "操作内容", "ip地址", "设备"]
-    # for i in range(len(headers)):
-    #     worksheet.cell(1, i + 1, headers[i])
-
-    # permissions = get_permission_index_map_cache()
-    # permission_mapper = {p["code"]: p["name"] for p in permissions.values()}
-    # user_mapper = dict()
-
-    # # table content
-    # for i in range(len(items)):
-    #     item = items[i]
-    #     row = i + 2  # +1 for 1-indexed, +1 for table head
-    #     if item["operator"] not in user_mapper:
-    #         operator = get_user_by_id(
-    #             item["operator"], check_enable=False, check_deleted=False
-    #         )
-    #         user_mapper[item["operator"]] = operator["name"]
-    #     operator_name = user_mapper[item["operator"]]
-    #     datas = [
-    #         format_datetime(item["created_at"]),
-    #         operator_name,
-    #         permission_mapper.get(item["resource"], ""),
-    #         item["ip"],
-    #         item["user_agent"],
-    #     ]
-    #     for j in range(len(datas)):
-    #         worksheet.cell(row, j + 1, datas[j])
-
-    # filename = f"{uuid.uuid4()}.xlsx"
-    # if not os.path.exists(settings.EXPORT_PATH):
-    #     os.makedirs(settings.EXPORT_PATH)
-    # workbook.save(settings.EXPORT_PATH + filename)
-    # return filename
+    cn_header = ["操作时间", "操作人", "操作模块", "资源ID", "操作内容", "操作类型", "ip地址", "设备"]
+    _, items = get_record_list(criteria)
+    data = []
+    permission_parent_name_map = get_permission_parent_name_map()
+    for item in items:
+        data.append(
+            [
+                item.get("created_at"),
+                item.get("operator"),
+                permission_parent_name_map.get(item.get("resource"), ""),
+                item.get("resource_id"),
+                item.get("content"),
+                ActionDesc.get(item.get("action")),
+                item.get("ip"),
+                item.get("user_agent"),
+            ]
+        )
+    return len(data), cn_header, data
