@@ -34,7 +34,7 @@ class DBaseDynamicDocument(DynamicDocument):
     def to_dict(self):
         data = self.to_mongo()
         if data and "_id" in data:
-            data["id"] = data.pop("_id")
+            data["id"] = str(data.pop("_id"))
         return data
 
     meta = {"abstract": True, "indexes": ["updated_at"]}
