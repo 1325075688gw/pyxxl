@@ -56,9 +56,9 @@ class RolePermissionRel(BaseModel):
 
 class Record(BaseModel):
     resource = models.CharField(max_length=100, null=True)
-    resource_id = models.CharField(max_length=100, null=True)
+    resource_id = models.CharField(max_length=32, null=True)
     action = models.SmallIntegerField()
     content = models.TextField()
-    operator = models.IntegerField()
+    operator = models.CharField(max_length=64, null=True)
     ip = models.CharField(max_length=100)
     user_agent = models.CharField(max_length=100)

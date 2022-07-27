@@ -569,6 +569,8 @@ def get_record_list(criteria: RecordListCriteria):
         query = query.filter(operator=criteria.operator)
     if criteria.resources:
         query = query.filter(resource__in=get_leaf_permissions(criteria.resources))
+    if criteria.resource_id:
+        query = query.filter(resource_id=criteria.resource_id)
     if criteria.action:
         query = query.filter(action=criteria.action)
     if criteria.ip:
@@ -577,6 +579,10 @@ def get_record_list(criteria: RecordListCriteria):
         query = query.filter(created_at__gte=criteria.created_at_begin)
     if criteria.created_at_end:
         query = query.filter(created_at__lte=criteria.created_at_end)
+    if criteria.resource_name:
+        permissions = Permission.objects.filter(parent__name=criteria.resource_name)
+        codes = {permission.code for permission in permissions}
+        query = query.filter(resource__in=codes)
     return (
         query.count(),
         [

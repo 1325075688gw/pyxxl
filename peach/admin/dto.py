@@ -21,7 +21,9 @@ class RoleListCriteria(PaginationCriteriaDTO):
 @dataclass
 class RecordListCriteria(PaginationCriteriaDTO):
     resources: list = None
-    operator: int = None
+    resource_id: str = None
+    resource_name: str = None
+    operator: str = None
     action: int = None
     ip: str = None
     created_at_begin: datetime = None

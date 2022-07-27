@@ -83,7 +83,9 @@ class UpdateRoleSchema(BaseSchema):
 
 class RecordListSchema(PaginationSchema):
     resources = fields.String(allow_none=True)
-    operator = fields.Integer()
+    resource_id = fields.String()
+    resource_name = fields.String()
+    operator = fields.String()
     action = fields.Integer()
     ip = fields.String()
     created_at_begin = fields.DateTime()
@@ -92,6 +94,8 @@ class RecordListSchema(PaginationSchema):
     def make_criteria(self, data, **kwargs) -> RecordListCriteria:
         return RecordListCriteria(
             resources=data["resources"].split(",") if data.get("resources") else [],
+            resource_id=data.get("resource_id"),
+            resource_name=data.get("resource_name"),
             operator=data.get("operator"),
             action=data.get("action"),
             ip=data.get("ip"),
