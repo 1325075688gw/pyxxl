@@ -29,10 +29,12 @@ class ApiMiddleware(MiddlewareMixin):
         if request.method == "GET":
             body = request.META["QUERY_STRING"]
         else:
-            if not request.META.get("CONTENT_TYPE") or request.META.get(
-                "CONTENT_TYPE"
-            ).startswith("multipart/form-data"):
-                return
+            if (
+                not request.META.get("CONTENT_TYPE")
+                or request.META.get("CONTENT_TYPE").startswith("multipart/form-data")
+                or request.path == "/api/upload_file/"
+            ):
+                body = None
             else:
                 body = request.body.decode()
         request.DATA = qdict_to_dict(QueryDict(body))
