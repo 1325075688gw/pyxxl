@@ -139,7 +139,7 @@ def handle_oper_record(req, resp):
         elif content_type == "application/x-www-form-urlencoded":
             temp = QueryDict(content).copy()
         resource = req.permission_code if hasattr(req, "permission_code") else None
-        operator = req.user_id if hasattr(req, "user_id") else None
+        operator = req.user["name"] if hasattr(req, "user_id") else None
         ip = get_client_ip(req)
         user_agent = shorten_user_agent(get_request_user_agent(req))
         if req.path == "/api/admin/login/":  # 登录时去除密码明文
