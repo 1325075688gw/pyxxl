@@ -59,6 +59,6 @@ class Record(BaseModel):
     resource_id = models.CharField(max_length=32, null=True)
     action = models.SmallIntegerField()
     content = models.TextField()
-    operator = models.CharField(max_length=64, null=True)
+    operator = models.IntegerField()
     ip = models.CharField(max_length=100)
     user_agent = models.CharField(max_length=100)
