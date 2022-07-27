@@ -65,6 +65,13 @@ def utc_to_local(dt):
     return timezone.make_aware(dt, UTC_TZ).astimezone(LOCAL_TZ)
 
 
+def local_to_utc(dt):
+    """local时间 to utc时间"""
+    if timezone.is_aware(dt):
+        return dt.astimezone(UTC_TZ)
+    return timezone.make_aware(dt, LOCAL_TZ).astimezone(UTC_TZ)
+
+
 def utc_to_local_str(dt, fmt="%Y-%m-%d %H:%M:%S"):
     """UTC naive 时间转本地时间字符串 常用于mongo查询到的时间"""
     if not dt:
@@ -140,3 +147,10 @@ def last_month_first_day(local_time=None):
     last_month = 12 if local_time.month == 1 else local_time.month - 1
     last_year = local_time.year - 1 if last_month == 12 else local_time.year
     return timezone.make_aware(datetime(last_year, last_month, 1))
+
+
+def day_start_time(dt):
+    """根据utc时间，得到当天0点的utc时间"""
+    local = utc_to_local(dt)
+    local_zero = local.replace(hour=0, minute=0, second=0, microsecond=0)
+    return local_to_utc(local_zero)
