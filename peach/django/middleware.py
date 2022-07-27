@@ -1,3 +1,4 @@
+import json
 import logging
 from dataclasses import is_dataclass
 from datetime import datetime
@@ -7,6 +8,12 @@ from django.http import JsonResponse, HttpResponse, QueryDict
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
 
+from peach.admin.const import ACTION
+from peach.django.header import (
+    get_client_ip,
+    shorten_user_agent,
+    get_request_user_agent,
+)
 from peach.misc.util import qdict_to_dict
 from peach.i18n.django import get_text
 from peach.misc.exceptions import BizException, IllegalRequestException
@@ -91,3 +98,68 @@ class ApiMiddleware(MiddlewareMixin):
             return HttpResponse("")
         else:
             return response
+
+
+class OperationLogMiddleware(MiddlewareMixin):
+    def process_request(self, request):
+        pass
+
+    def process_exception(self, request, exception):
+        pass
+
+    def process_response(self, request, response):
+        try:
+            if isinstance(response, (dict, HttpResponse)):
+                handle_oper_record(request, response)
+        except Exception:
+            _LOGGER.info("OperationLogMiddleware  exception", exc_info=True)
+        return response
+
+
+def handle_oper_record(req, resp):
+    if req.method not in ACTION:
+        return
+
+    # 新增导出事件记录
+    if req.method == "GET":
+        if not req.GET.get("export"):
+            return
+        # 导出没有数据的记录, resource_id 设置为 0
+        resp["id"] = 0
+
+    try:
+        resource_id = resp.get("id", 0)
+        action = ACTION[req.method]
+        content_type = req.META.get("CONTENT_TYPE")
+        content = req.body.decode() if req.body else ""
+
+        temp = dict()
+        if content_type is not None and content_type.startswith("application/json"):
+            temp = json.loads(content) if content else dict()
+        elif content_type == "application/x-www-form-urlencoded":
+            temp = QueryDict(content).copy()
+        resource = req.permission_code if hasattr(req, "permission_code") else None
+        operator = req.user_id if hasattr(req, "user_id") else None
+        ip = get_client_ip(req)
+        user_agent = shorten_user_agent(get_request_user_agent(req))
+        if req.path == "/api/admin/login/":  # 登录时去除密码明文
+            resource = "admin_login"
+            operator = resp["id"]
+
+        from peach.admin.services import admin_service
+
+        if not resource:
+            return
+        if isinstance(resource, list):
+            resource = resource[0]
+        admin_service.insert_record(
+            resource,
+            resource_id,
+            action,
+            json.dumps(temp),
+            operator,
+            ip,
+            user_agent,
+        )
+    except Exception as e:
+        _LOGGER.exception("insert record exception {}".format(e))

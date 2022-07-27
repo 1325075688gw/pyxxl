@@ -213,7 +213,7 @@ class PermissionListView(BaseView):
 
 class ResourceOptionView(BaseView):
     @method_decorator(require_login)
-    # @method_decorator(check_permission('record_get'))
+    @method_decorator(check_permission("record_get"))
     def get(self, request):
         resource_map = admin_service.get_resource_map()
         return [e for e in resource_map]

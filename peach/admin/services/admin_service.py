@@ -9,7 +9,7 @@ from django.db.models import F
 
 from peach.report.api import report_decorator
 from peach.misc import dt
-from peach.admin.const import ActionDesc
+from ..const import ActionDesc
 
 from ..exceptions import (
     ERROR_USER_NOT_EXISTS,
