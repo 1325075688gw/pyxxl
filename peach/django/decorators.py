@@ -1,3 +1,4 @@
+import logging
 from functools import wraps
 import json
 from django.conf import settings
@@ -7,6 +8,8 @@ from django.http import HttpRequest, QueryDict
 from marshmallow import ValidationError, EXCLUDE
 
 from peach.misc.exceptions import IllegalRequestException
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def validate_parameters(schema: object) -> object:
@@ -21,6 +24,11 @@ def validate_parameters(schema: object) -> object:
                 )
 
             content_type = request.META.get("CONTENT_TYPE")
+            _LOGGER.info(
+                "validate_parameters path: %s, content_type: %s",
+                request.path,
+                content_type,
+            )
             if request.method == "GET":
                 body = QueryDict(request.META["QUERY_STRING"])
                 body = json.loads(body.get("p")) if body.get("p") else body
