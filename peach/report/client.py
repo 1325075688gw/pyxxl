@@ -142,7 +142,7 @@ class ReportClient:
         self._executor()
 
     def _executor(self):
-        _LOGGER.info(f"start export tasks: {self.cur_task} now: {dt.local_now()}")
+        _LOGGER.info(f"start export tasks: {len(self.cur_task)} now: {dt.local_now()}")
         for task_id in list(self.cur_task.keys()):
             try_count = 0
             success = False
@@ -162,12 +162,11 @@ class ReportClient:
                         file_name, mode="a+"
                     )
 
-                    page_no = report_task_info.page_no
                     if report_task_info.filter_params:
                         filter_params = json.loads(report_task_info.filter_params)
                     else:
                         filter_params = dict()
-                    filter_params["page_no"] = page_no
+                    filter_params["page_no"] = report_task_info.page_no
                     filter_params["page_size"] = report_task_info.page_size
                     items_count = 0
                     while True:
@@ -177,8 +176,8 @@ class ReportClient:
                         if not items:
                             break
                         items_count += count
-                        page_no += 1
-                        if page_no > MAX_PAGE_NUMS:
+                        filter_params["page_no"] += 1
+                        if filter_params["page_no"] > MAX_PAGE_NUMS:
                             break
                     engine.export()
                     self._upload_file(task_id, items_count)
