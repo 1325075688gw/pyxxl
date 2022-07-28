@@ -235,7 +235,7 @@ class RecordListView(BaseView):
         records = wrapper_record_info(records)
         return PaginationResponse(total, records)
 
-    @method_decorator(check_permission("record_export"))
+    @method_decorator(check_permission("record_download"))
     def export(self, request, cleaned_data: RecordListCriteria):
         res = report_client.add_report_task(
             report_type="admin_record",
