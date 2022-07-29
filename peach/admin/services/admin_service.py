@@ -603,7 +603,7 @@ def export_record(criteria: RecordListCriteria):
     for item in items:
         data.append(
             [
-                item.get("created_at"),
+                dt.utc_to_local_str(item.get("created_at")),
                 item.get("operator"),
                 permission_parent_name_map.get(item.get("resource"), ""),
                 item.get("resource_id"),
