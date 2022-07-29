@@ -1,3 +1,4 @@
+from typing import Optional
 from dataclasses import dataclass
 from datetime import datetime
 
@@ -20,11 +21,11 @@ class RoleListCriteria(PaginationCriteriaDTO):
 
 @dataclass
 class RecordListCriteria(PaginationCriteriaDTO):
-    resources: list = None
-    resource_id: str = None
-    resource_name: str = None
-    operator: str = None
-    action: int = None
-    ip: str = None
-    created_at_begin: datetime = None
-    created_at_end: datetime = None
+    resources: Optional[list] = None
+    resource_id: Optional[str] = None
+    resource_name: Optional[str] = None
+    operator: Optional[str] = None
+    action: Optional[int] = None
+    ip: Optional[str] = None
+    created_at_begin: Optional[datetime] = None
+    created_at_end: Optional[datetime] = None
