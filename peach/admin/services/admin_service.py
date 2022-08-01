@@ -2,6 +2,7 @@ import copy
 import uuid
 from fnmatch import fnmatch
 from datetime import timedelta
+from django.conf import settings
 
 import bcrypt
 from django.db import transaction
@@ -168,15 +169,20 @@ def create_token(user_id):
     return new_token
 
 
-def get_user_by_token(token):
+def get_user_by_token(token, update=False):
+    if settings.DEBUG:
+        valid_created_at = dt.local_now() - timedelta(days=14)
+    else:
+        valid_created_at = dt.local_now() - timedelta(hours=6)
     token = Token.objects.filter(
         token=token,
-        created_at__gt=dt.local_now() - timedelta(hours=6),
+        created_at__gt=valid_created_at,
         user__enable=True,
     ).first()
     if not token:
         raise BizException(ERROR_USER_TOKEN_NOT_EXISTS)
-
+    if update:
+        token.save()
     return token.user.to_dict(exclude=["password"])
 
 

@@ -28,7 +28,7 @@ def require_login(func):
         if not token:
             raise BizException(ERROR_USER_TOKEN_NOT_EXISTS)
 
-        user = admin_service.get_user_by_token(token)
+        user = admin_service.get_user_by_token(token, update=True)
         request.user_id = user["id"]
         request.token = token
         request.user = user
