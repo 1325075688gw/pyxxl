@@ -29,3 +29,15 @@ def qdict_to_dict(qdict):
 
     """
     return {k: v[0] if len(v) == 1 else v for k, v in qdict.lists()}
+
+
+def singleton(cls, *args, **kw):
+    """singleton decorator"""
+    instance = {}
+
+    def _singleton():
+        if cls not in instance:
+            instance[cls] = cls(*args, **kw)
+        return instance[cls]
+
+    return _singleton
