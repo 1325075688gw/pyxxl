@@ -183,7 +183,7 @@ def get_user_by_token(token, update=False):
         raise BizException(ERROR_USER_TOKEN_NOT_EXISTS)
     if update:
         token.save()
-    return token.user.to_dict(exclude=["password"])
+    return token.user.to_dict(exclude=["password"], return_many_to_many=True)
 
 
 def delete_token(user_id, token):
