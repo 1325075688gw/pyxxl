@@ -1,8 +1,11 @@
+import datetime
 import logging
 import threading
 
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
+
+from . import local
 from .text import ResouceLoader
 
 _LOGGER = logging.getLogger()
@@ -51,6 +54,14 @@ def get_text(msg_id: str, lan: str = None, **kwargs):
         return msg_id
 
     return _RES.get_text(msg_id, lan or get_default_lan(), **kwargs)
+
+
+def format_datetime(d: datetime, lan: str = None) -> str:
+    return local.format_datetime(d, lan or get_default_lan())
+
+
+def format_amount(c: int, lan: str = None) -> str:
+    return local.format_amount(c, lan or get_default_lan())
 
 
 class LocaleMiddleware(MiddlewareMixin):
