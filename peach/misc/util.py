@@ -1,10 +1,11 @@
 import typing
 from datetime import datetime
 from enum import Enum
-from typing import Type, Any
+from typing import Type, Any, Union
 
 from dacite import from_dict, Config
 from peach.misc import dt
+from dataclasses import asdict
 
 
 def dict_to_dto(data: typing.Dict, data_class: Type) -> Any:
@@ -19,6 +20,12 @@ def dict_to_dto(data: typing.Dict, data_class: Type) -> Any:
             },
         ),
     )
+
+
+def dto_to_dict(data_class: Union[Type, None]) -> dict:
+    if data_class is None:
+        return None
+    return asdict(data_class)
 
 
 def qdict_to_dict(qdict):
