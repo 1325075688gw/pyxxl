@@ -10,6 +10,7 @@ from django.db.models import F
 
 from peach.report.api import report_decorator
 from peach.misc import dt
+from .. import signals
 from ..const import ActionDesc
 
 from ..exceptions import (
@@ -56,6 +57,7 @@ def add_user(name, password, role_ids=None, parent_id=None, enable=None):
             name=name, password=encrypted_pwd, parent=parent, enable=enable
         )
         _bind_user_to_groups(user, role_ids)
+        signals.post_add_user.send(sender=User, instance=user)
 
     return user.to_dict(exclude=["password", "deleted"])
 
@@ -79,6 +81,7 @@ def delete_user(user_id):
         user.enable = False
         user.save()
         user.roles.clear()
+        signals.post_del_user.send(sender=User, instance=user)
 
 
 def update_user(user_id, role_ids=None, enable=None):
@@ -94,6 +97,7 @@ def update_user(user_id, role_ids=None, enable=None):
             user.enable = enable
         user.save()
         _bind_user_to_groups(user, role_ids)
+        signals.post_update_user.send(sender=User, instance=user)
 
 
 def update_user_login_count(user_id):
