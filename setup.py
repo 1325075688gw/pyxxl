@@ -27,5 +27,6 @@ setup(
         "pandas==1.4.2",
         "boto3==1.24.31",
         "openpyxl==3.0.10",
+        "blinker==1.5",
     ],
 )
