@@ -1,3 +1,4 @@
+import decimal
 from datetime import datetime
 from decimal import Decimal
 from functools import partial
@@ -26,8 +27,8 @@ def format_datetime(dt: datetime, lan: str) -> str:
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def format_amount(amount: int, lan: str) -> str:
-    assert isinstance(amount, int)
+def format_amount(amount: int or float, lan: str) -> str:
+    assert isinstance(amount, (int, float))
     if lan == "pt":
         convert_tool = PTFormatter()
     elif lan == "hi":
@@ -37,67 +38,75 @@ def format_amount(amount: int, lan: str) -> str:
     elif lan == "vi":
         convert_tool = VIFormatter()
     else:
-        return str(_divide_amount(amount))
-    return convert_tool.convert_amount(int(_divide_amount(amount)))
+        convert_tool = CommonFormatter()
+    return convert_tool.convert_amount(_divide_amount(amount))
 
 
 class BaseFormatter:
-    def convert_amount(self, amount: int) -> str:
+    def convert_amount(self, amount: int or float) -> str:
         raise NotImplementedError()
+
+
+@singleton
+class CommonFormatter(BaseFormatter):
+    def convert_amount(self, amount: int or float) -> str:
+        return str(amount)
 
 
 @singleton
 class PTFormatter(BaseFormatter):
     # 巴西邮件金额格式化
-    def convert_amount(self, amount: int) -> str:
+    def convert_amount(self, amount: int or float) -> str:
         if amount >= _TO_M:
             m_amount = amount / _M
             if m_amount == int(m_amount):
                 amount = f"{int(m_amount)}M"
             else:
-                amount = f"{round(m_amount, 2)}M"
-        return amount
+                amount = f"{_format_amount_two_digits(m_amount)}M"
+            return amount
+        return str(_format_amount_two_digits(amount))
 
 
 @singleton
 class IDFormatter(BaseFormatter):
     # 印尼邮件金额格式化
-    def convert_amount(self, amount: int) -> str:
+    def convert_amount(self, amount: int or float) -> str:
         if amount >= _TO_M:
             m_amount = amount / _M
             if m_amount == int(m_amount):
                 amount = f"{format(int(m_amount), ',')}M"
             else:
-                amount = f"{format(round(m_amount, 2), ',')}M"
-
-        return amount
+                amount = f"{format(_format_amount_two_digits(m_amount), ',')}M"
+            return amount
+        return str(_format_amount_two_digits(amount))
 
 
 @singleton
 class HIFormatter(BaseFormatter):
     # 印度邮件金额格式化
-    def convert_amount(self, amount: int) -> str:
+    def convert_amount(self, amount: int or float) -> str:
         if _TO_K < amount >= _TO_CR:
-            amount = f"{round(amount / _CR, 2)}Cr"
+            return f"{_format_amount_two_digits(amount / _CR)}Cr"
         elif _TO_K <= amount < _TO_CR:
-            k_amount = round(amount / _K, 2)
+            k_amount = _format_amount_two_digits(amount / _K)
             if k_amount == int(k_amount):
                 amount = f"{int(k_amount)}K"
             else:
                 amount = f"{k_amount}K"
-        return amount
+            return amount
+        else:
+            return str(_format_amount_two_digits(amount))
 
 
 @singleton
 class VIFormatter(BaseFormatter):
     # 越南邮件金额格式化
-    def convert_amount(self, amount: int) -> str:
+    def convert_amount(self, amount: int or float) -> str:
         if amount >= _TO_M:
-            amount = f"{int(amount / _M)}M"
-
+            return f"{int(amount / _M)}M"
         elif _TO_K <= amount < _TO_M:
-            amount = f"{int(amount / _K)}K"
-        return amount
+            return f"{int(amount / _K)}K"
+        return str(_format_amount_two_digits(amount))
 
 
 def _convert_amount(d, method, keys):
@@ -127,3 +136,14 @@ def _divide_amount(d, *keys):
 
 def divide_amount_to_ratio(x, ratio):
     return x / ratio
+
+
+def _format_amount_two_digits(amount: float or int) -> int or Decimal:
+    if isinstance(amount, int):
+        return amount
+    elif int(amount) == amount:
+        return int(amount)
+    else:
+        return decimal.Decimal(str(amount)).quantize(
+            decimal.Decimal("0.00"), decimal.ROUND_DOWN
+        )
