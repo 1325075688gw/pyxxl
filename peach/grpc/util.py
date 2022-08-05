@@ -93,8 +93,8 @@ def wrap_response(resp: Message):
                     _resp,
                     ignore_unknown_fields=True,
                 )
-            if settings.DEBUG:
-                _LOGGER.debug(f"[invoke rpc resp]{func.__name__}, resp: {_resp}")
+            # if settings.DEBUG:
+            #     _LOGGER.debug(f"[invoke rpc resp]{func.__name__}, resp: {_resp}")
 
             return _resp
 
