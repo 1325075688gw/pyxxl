@@ -3,9 +3,9 @@ from decimal import Decimal
 from peach.i18n.local import format_amount, _format_amount_two_digits
 
 
-def test_format_credit_by_hi():
+def test_format_credit_by_in():
     amount_k = 100000000
-    nation = "hi"
+    nation = "in"
     di_amount_k = format_amount(amount_k, nation)
     assert di_amount_k == "100K"
     amount_cr = 10827162000.25
@@ -16,9 +16,9 @@ def test_format_credit_by_hi():
     assert di_amount_float_cr == "1.88Cr"
 
 
-def test_format_credit_by_vi():
+def test_format_credit_by_vn():
     amount_k = 100000000
-    nation = "vi"
+    nation = "vn"
     di_amount_k = format_amount(amount_k, nation)
     assert di_amount_k == "100K"
     amount_m = 1000000000
@@ -39,8 +39,8 @@ def test_format_credit_by_id():
     assert di_amount_m_float == "1,200.32M"
 
 
-def test_format_credit_by_pt():
-    nation = "pt"
+def test_format_credit_by_br():
+    nation = "br"
     amount_m = 1000000000
     di_amount_m = format_amount(amount_m, nation)
     assert di_amount_m == "1M"

@@ -3,6 +3,7 @@ import logging
 import os
 import typing
 
+from peach.i18n.helper import short_lan
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -64,8 +65,12 @@ class ResouceLoader:
             return msg_id
         lans = self._texts[msg_id]
         if lan not in lans:
-            _LOGGER.warning(f"i18n, the lan is not exists: {lan} in msg_id: {msg_id}")
-            return msg_id
+            lan = short_lan(lan)
+            if lan not in lans:
+                _LOGGER.warning(
+                    f"i18n, the lan is not exists: {lan} in msg_id: {msg_id}"
+                )
+                return msg_id
         text = lans[lan]
         return text.format(**kwargs) if kwargs else text
 
