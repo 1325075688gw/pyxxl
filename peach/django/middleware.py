@@ -144,14 +144,17 @@ def handle_oper_record(req, resp):
         operator = req.user_id if hasattr(req, "user_id") else None
         ip = get_client_ip(req)
         user_agent = shorten_user_agent(get_request_user_agent(req))
-        if req.path == "/api/admin/login/":  # 登录时去除密码明文
+        if "/admin/login/" in req.path:  # 登录时去除密码明文
             resource = "admin_login"
             operator = resp["id"]
+            temp.pop("password")
 
         from peach.admin.services import admin_service
 
         if not resource:
             return
+        if resource == "admin_user_add":
+            temp.pop("password")
         if isinstance(resource, list):
             resource = resource[0]
         admin_service.insert_record(
