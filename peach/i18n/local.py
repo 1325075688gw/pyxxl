@@ -3,6 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from functools import partial
 
+from peach.i18n.helper import get_country
 from peach.misc.util import singleton
 
 # 展示单位M, K, Cr的阈值
@@ -27,16 +28,21 @@ def format_datetime(dt: datetime, lan: str) -> str:
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def format_amount(amount: int or float, lan: str) -> str:
+def format_amount(
+    amount: int or float,
+    lan: str,
+) -> str:
     assert isinstance(amount, (int, float))
-    if lan == "pt":
-        convert_tool = PTFormatter()
-    elif lan == "hi":
-        convert_tool = HIFormatter()
-    elif lan == "id":
+    assert lan
+    country = get_country(lan).upper()
+    if country == "BR":
+        convert_tool = BRFormatter()
+    elif country == "IN":
+        convert_tool = INFormatter()
+    elif country == "ID":
         convert_tool = IDFormatter()
-    elif lan == "vi":
-        convert_tool = VIFormatter()
+    elif country == "VN":
+        convert_tool = VNFormatter()
     else:
         convert_tool = CommonFormatter()
     return convert_tool.convert_amount(_divide_amount(amount))
@@ -54,7 +60,7 @@ class CommonFormatter(BaseFormatter):
 
 
 @singleton
-class PTFormatter(BaseFormatter):
+class BRFormatter(BaseFormatter):
     # 巴西邮件金额格式化
     def convert_amount(self, amount: int or float) -> str:
         if amount >= _TO_M:
@@ -82,7 +88,7 @@ class IDFormatter(BaseFormatter):
 
 
 @singleton
-class HIFormatter(BaseFormatter):
+class INFormatter(BaseFormatter):
     # 印度邮件金额格式化
     def convert_amount(self, amount: int or float) -> str:
         if _TO_K < amount >= _TO_CR:
@@ -99,7 +105,7 @@ class HIFormatter(BaseFormatter):
 
 
 @singleton
-class VIFormatter(BaseFormatter):
+class VNFormatter(BaseFormatter):
     # 越南邮件金额格式化
     def convert_amount(self, amount: int or float) -> str:
         if amount >= _TO_M:
