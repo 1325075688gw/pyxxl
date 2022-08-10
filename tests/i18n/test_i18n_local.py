@@ -5,7 +5,7 @@ from peach.i18n.local import format_amount, _format_amount_two_digits
 
 def test_format_credit_by_in():
     amount_k = 100000000
-    nation = "in"
+    nation = "en-in"
     di_amount_k = format_amount(amount_k, nation)
     assert di_amount_k == "100K"
     amount_cr = 10827162000.25
@@ -14,11 +14,14 @@ def test_format_credit_by_in():
     di_amount_float = 18897162000.25
     di_amount_float_cr = format_amount(di_amount_float, nation)
     assert di_amount_float_cr == "1.88Cr"
+    amount_ = 100000
+    di_amount = format_amount(amount_, nation)
+    assert di_amount == "100"
 
 
 def test_format_credit_by_vn():
     amount_k = 100000000
-    nation = "vn"
+    nation = "vi-vn"
     di_amount_k = format_amount(amount_k, nation)
     assert di_amount_k == "100K"
     amount_m = 1000000000
@@ -27,7 +30,7 @@ def test_format_credit_by_vn():
 
 
 def test_format_credit_by_id():
-    nation = "id"
+    nation = "id-id"
     amount_m = 1000000000
     di_amount_m = format_amount(amount_m, nation)
     assert di_amount_m == "1M"
@@ -40,7 +43,7 @@ def test_format_credit_by_id():
 
 
 def test_format_credit_by_br():
-    nation = "br"
+    nation = "pt-br"
     amount_m = 1000000000
     di_amount_m = format_amount(amount_m, nation)
     assert di_amount_m == "1M"
