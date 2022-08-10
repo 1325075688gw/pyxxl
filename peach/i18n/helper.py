@@ -4,7 +4,7 @@ def get_country(lan: str) -> str:
     lans = lan.split("-")
     if len(lans) == 2:
         return lans[1]
-    return lan
+    return ""
 
 
 def short_lan(lan: str) -> str:
