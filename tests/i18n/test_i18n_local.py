@@ -1,13 +1,11 @@
+import datetime
 from decimal import Decimal
 
-from peach.i18n.local import format_amount, _format_amount_two_digits
+from peach.i18n.local import format_amount, _format_amount_two_digits, format_datetime
 
 
 def test_format_credit_by_in():
-    amount_k = 100000000
     nation = "en-in"
-    di_amount_k = format_amount(amount_k, nation)
-    assert di_amount_k == "100K"
     amount_cr = 10827162000.25
     di_amount_cr = format_amount(amount_cr, nation)
     assert di_amount_cr == "1.08Cr"
@@ -63,3 +61,13 @@ def test_format_amount_two_digits():
     assert _format_amount_two_digits(amount_float1) == 10
     amount_float_2 = 10.0
     assert _format_amount_two_digits(amount_float_2) == 10
+
+
+def test_format_datetime():
+    lan = "pt-br"
+    data_time = datetime.datetime.now()
+    format_date_time = format_datetime(data_time, lan)
+    assert format_date_time == data_time.strftime("%d-%m-%Y %H:%M:%S")
+    lan = "in"
+    format_date_time = format_datetime(data_time, lan)
+    assert format_date_time == data_time.strftime("%Y-%m-%d %H:%M:%S")

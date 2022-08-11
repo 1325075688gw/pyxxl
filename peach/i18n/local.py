@@ -22,7 +22,8 @@ GAME_AMOUNT_RATIO = 1000  # 厘
 def format_datetime(dt: datetime, lan: str) -> str:
     assert isinstance(dt, datetime)
     assert isinstance(lan, str)
-    if lan in ["pt", "hi", "id"]:
+    country = get_country(lan).upper()
+    if country in ["BR", "IN", "ID"]:
         return dt.strftime("%d-%m-%Y %H:%M:%S")
     else:
         return dt.strftime("%Y-%m-%d %H:%M:%S")
@@ -91,15 +92,8 @@ class IDFormatter(BaseFormatter):
 class INFormatter(BaseFormatter):
     # 印度邮件金额格式化
     def convert_amount(self, amount: int or float) -> str:
-        if _TO_K < amount >= _TO_CR:
+        if amount >= _TO_CR:
             return f"{_format_amount_two_digits(amount / _CR)}Cr"
-        elif _TO_K <= amount < _TO_CR:
-            k_amount = _format_amount_two_digits(amount / _K)
-            if k_amount == int(k_amount):
-                amount = f"{int(k_amount)}K"
-            else:
-                amount = f"{k_amount}K"
-            return amount
         else:
             return str(_format_amount_two_digits(amount))
 
