@@ -1,14 +1,18 @@
 from functools import wraps
 import inspect
 
+from django.conf import settings
 from django.http import HttpRequest
 
 from .exceptions import (
     ERROR_PERMISSION_NOT_AUTHORIZED,
     ERROR_LIST_FUNC_MISS_ARGS,
     ERROR_USER_TOKEN_NOT_EXISTS,
+    ERROR_VCODE_EMPTY,
+    ERROR_VCODE_INCORRECT,
 )
 from .services import admin_service
+from .safe_dog import safe_client
 from peach.misc.exceptions import BizException
 
 
@@ -88,10 +92,9 @@ def require_vcode(func):
 
 
 def check_user_vcode(request, user_id):
-    pass
-    # if settings.IS_PRODUCTION_ENV:
-    #     vcode = request.META.get("HTTP_X_AUTH_VCODE")
-    #     if not vcode:
-    #         raise BizException(ERROR_VCODE_EMPTY)
-    #     if not safe_dog_client.verify_token(user_id, vcode, "127.0.0.1"):
-    #         raise BizException(ERROR_VCODE_INCORRECT)
+    if not settings.DEBUG:
+        vcode = request.META.get("HTTP_X_AUTH_VCODE")
+        if not vcode:
+            raise BizException(ERROR_VCODE_EMPTY)
+        if not safe_client.verify_token(user_id, vcode, "127.0.0.1"):
+            raise BizException(ERROR_VCODE_INCORRECT)
