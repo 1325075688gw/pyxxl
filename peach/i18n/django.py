@@ -19,7 +19,10 @@ _DEFAULT_LAN = "en"
 
 def load_i18n_resource(path: str):
     global _RES
-    _RES = ResouceLoader(path)
+    try:
+        _RES = ResouceLoader(path)
+    except Exception:
+        _LOGGER.exception(f"load i18n src fail, path: {path}")
 
 
 def set_local_lan(lan: str):
