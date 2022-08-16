@@ -21,7 +21,11 @@ def order_id_generator(
 
     def _generator() -> int:
         prefix = dt.local_now().strftime("%y%m%d%H%M%S")
-        suffix = redis_client.incr(f"order:id_generator:{order_type}")
-        return int(prefix + str(suffix).zfill(2))
+        cache_key = f"order:id_generator:{order_type}"
+        suffix = redis_client.incr(cache_key)
+        if suffix > 100050:
+            # 重置缓存值，避免无限增长
+            redis_client.set(cache_key, 0)
+        return int(prefix + str(suffix % 100).zfill(2))
 
     return _generator
