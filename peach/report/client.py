@@ -4,6 +4,7 @@ import json
 import logging
 import os
 import pickle
+import typing
 import uuid
 import dataclasses
 from collections import namedtuple
@@ -63,7 +64,7 @@ class ReportClient:
     """
 
     FileType = _FileType
-    report_types = dict()
+    report_types: typing.Dict[str, typing.Callable] = dict()
 
     def __init__(
         self, server_host, app_key, app_secret, temp_file_dir=None, debug=False

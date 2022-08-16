@@ -74,8 +74,8 @@ class ListField(fields.Str):
 
 
 class LoadDumpOptions(Enum):
-    value = 1
-    name = 0
+    value = 1  # type: ignore
+    name = 0  # type: ignore
 
 
 class LocalDatetimeField(fields.DateTime):

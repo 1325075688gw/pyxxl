@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 from django.db import models
 from peach.django.models import BaseModel, ListField
 

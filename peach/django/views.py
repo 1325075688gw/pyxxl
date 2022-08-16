@@ -5,7 +5,7 @@ from django.views import View
 
 
 class BaseView(View):
-    SUCCESS_RESPONSE = dict()
+    SUCCESS_RESPONSE: typing.Dict = dict()
 
     def dispatch(self, request, *args, **kwargs):
         response = super().dispatch(request, *args, **kwargs)
