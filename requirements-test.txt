@@ -1,0 +1,14 @@
+pytest
+pytest-django
+pytest-cov
+pytest-mock==3.3.1
+coverage==6.1.1
+freezegun
+django-stubs
+types-protobuf
+types-PyMySQL
+types-pytz
+types-PyYAML
+types-redis
+types-requests
+types-urllib3

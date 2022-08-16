@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 import decimal
 from datetime import datetime
 from decimal import Decimal

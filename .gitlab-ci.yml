@@ -1,0 +1,49 @@
+image: "python:3.9"
+
+variables:
+  MYSQL_ALLOW_EMPTY_PASSWORD: "true"
+
+before_script:
+  - python --version  # For debugging
+  - git config --global url."https://gitlab-ci-token:${CI_JOB_TOKEN}@git.easycodesource.com/".insteadOf https://git.easycodesource.com/
+
+
+stages:
+  - lint
+  - test
+
+lint:
+  stage: lint
+  script:
+    - echo "lint ..."
+    - pip install flake8==5.0.4
+    - flake8
+  only:
+    - merge_requests
+
+test:
+  services:
+    - name: mysql:8.0
+      command: ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    - redis:6.2
+    - mongo:4.4
+    - memcached:1.6
+  stage: test
+  script:
+     - python setup.py install
+     - pip install -r requirements-test.txt
+     - export CI_TEST=true
+     - echo "mypy check ... "
+     - pip install mypy==0.971
+     - mypy ./peach
+     - echo "run test ... "
+     - pytest -s -vv --cov-config=.coveragerc --cov=. tests
+     #- pytest -s -vv --cov-config=.coveragerc --cov=. tests --junitxml=report.xml
+     #- coverage xml
+#  artifacts:
+#    when: always
+#    reports:
+#      junit: report.xml
+#      cobertura: coverage.xml
+  only:
+    - merge_requests

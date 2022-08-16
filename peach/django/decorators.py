@@ -1,3 +1,4 @@
+import typing
 from functools import wraps
 import json
 from django.conf import settings
@@ -9,7 +10,7 @@ from marshmallow import ValidationError, EXCLUDE
 from peach.misc.exceptions import IllegalRequestException
 
 
-def validate_parameters(schema: object) -> object:
+def validate_parameters(schema: object) -> typing.Callable:
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):

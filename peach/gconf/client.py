@@ -182,14 +182,14 @@ class GConfClient:
                 if name.endswith("json"):
                     value = json.loads(raw)
                 elif name.endswith("toml"):
-                    value = tomli.loads(raw)
+                    value = tomli.loads(raw)  # type: ignore
                 self.conf_items[name] = value
             except Exception:
                 _LOGGER.exception(
                     f"gconf get_dict fail, the value has invalid format: {name}"
                 )
                 raise
-            return value
+            return value  # type: ignore
 
     def get_value(self, name, default=None) -> str:
         value = self.conf_items.get(name)
