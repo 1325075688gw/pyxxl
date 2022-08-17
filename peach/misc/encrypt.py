@@ -122,6 +122,14 @@ def md5_digest(raw, key=None):
     return m.digest()
 
 
+def md5(data_str: str, key: str = None) -> str:
+    m = hashlib.md5()
+    m.update(data_str.encode("utf-8"))
+    if key:
+        m.update(key.encode("utf-8"))
+    return m.hexdigest()
+
+
 if __name__ == "__main__":
     access_code = "4209b303210ee9d3"
 
