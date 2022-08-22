@@ -598,7 +598,7 @@ def get_record_list(criteria: RecordListCriteria):
         [
             e.to_dict()
             for e in paginate(
-                query.order_by("-updated_at"), criteria.page_no, criteria.page_size
+                query.order_by(criteria.order_by), criteria.page_no, criteria.page_size
             )
         ],
     )

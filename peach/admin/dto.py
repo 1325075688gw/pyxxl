@@ -29,3 +29,4 @@ class RecordListCriteria(PaginationCriteriaDTO):
     ip: Optional[str] = None
     created_at_begin: Optional[datetime] = None
     created_at_end: Optional[datetime] = None
+    order_by: Optional[str] = None
