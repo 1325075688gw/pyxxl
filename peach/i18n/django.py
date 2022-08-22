@@ -5,6 +5,7 @@ import threading
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
+from peach.misc.dt import utc_to_local
 from . import local
 from .text import ResouceLoader
 
@@ -60,7 +61,7 @@ def get_text(msg_id: str, lan: str = None, **kwargs):
 
 
 def format_datetime(d: datetime, lan: str = None) -> str:
-    return local.format_datetime(d, lan or get_default_lan())
+    return local.format_datetime(utc_to_local(d), lan or get_default_lan())
 
 
 def format_amount(c: int, lan: str = None) -> str:
