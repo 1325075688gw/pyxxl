@@ -70,10 +70,21 @@ class RolePermissionRelSchema(BaseSchema):
 class GetRoleSchema(PaginationSchema):
     name = fields.String()
     permission_code = fields.String()
+    order_by = OptionField(
+        [
+            "created_at",
+            "-created_at",
+            "updated_at",
+            "-updated_at",
+        ],
+        missing="-updated_at",
+    )
 
     def make_criteria(self, data) -> RoleListCriteria:
         return RoleListCriteria(
-            name=data.get("name"), permission_code=data.get("permission_code")
+            name=data.get("name"),
+            permission_code=data.get("permission_code"),
+            order_by=data.get("order_by"),
         )
 
 
