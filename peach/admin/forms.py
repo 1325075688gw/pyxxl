@@ -29,7 +29,15 @@ class AddUserSchema(BaseSchema):
 
 class GetUserSchema(PaginationSchema):
     order_by = OptionField(
-        ["last_login_at", "-last_login_at"], missing="-last_login_at"
+        [
+            "last_login_at",
+            "-last_login_at",
+            "created_at",
+            "-created_at",
+            "updated_at",
+            "-updated_at",
+        ],
+        missing="-last_login_at",
     )
     name = fields.String()
     enable = fields.Boolean()
@@ -90,6 +98,7 @@ class RecordListSchema(PaginationSchema):
     ip = fields.String()
     created_at_begin = fields.DateTime()
     created_at_end = fields.DateTime()
+    order_by = fields.String(missing="-updated_at")
 
     def make_criteria(self, data, **kwargs) -> RecordListCriteria:
         return RecordListCriteria(
@@ -101,4 +110,5 @@ class RecordListSchema(PaginationSchema):
             ip=data.get("ip"),
             created_at_begin=data.get("created_at_begin"),
             created_at_end=data.get("created_at_end"),
+            order_by=data.get("order_by"),
         )
