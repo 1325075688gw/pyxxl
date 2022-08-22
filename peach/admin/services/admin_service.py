@@ -358,7 +358,7 @@ def get_role(role_id, with_permissions=False):
 
 
 def list_roles(criteria: RoleListCriteria):
-    query = Role.objects.all().order_by("-id")
+    query = Role.objects.all().order_by(criteria.order_by)
     if criteria.name:
         query = query.filter(name=criteria.name)
     if criteria.permission_code:

@@ -17,6 +17,7 @@ class UserListCriteria(PaginationCriteriaDTO):
 class RoleListCriteria(PaginationCriteriaDTO):
     name: str = None
     permission_code: str = None
+    order_by: str = None
 
 
 @dataclass
