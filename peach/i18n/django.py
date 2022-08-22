@@ -5,9 +5,9 @@ import threading
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
+from peach.misc.dt import utc_to_local
 from . import local
 from .text import ResouceLoader
-from ..misc.dt import utc_to_local
 
 _LOGGER = logging.getLogger()
 
