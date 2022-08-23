@@ -15,11 +15,12 @@ from peach.django.header import (
     get_request_user_agent,
 )
 from peach.misc.util import qdict_to_dict
-from peach.i18n.django import get_text
 from peach.misc.exceptions import BizException, IllegalRequestException
 from peach.django.json import JsonEncoder
 
 _LOGGER = logging.getLogger(__name__)
+
+_SERVER_ERR_MSG = "Server Error"  # 500
 
 
 class ApiMiddleware(MiddlewareMixin):
@@ -40,7 +41,7 @@ class ApiMiddleware(MiddlewareMixin):
         request.DATA = qdict_to_dict(QueryDict(body))
 
     def process_exception(self, request, exception):
-        print_msg = exception.__class__.__name__ + " : " + str(exception)
+        print_msg = str(exception)
         user_id = request.user_id if hasattr(request, "user_id") else None
         if isinstance(exception, IllegalRequestException):
             if settings.DEBUG:
@@ -53,12 +54,6 @@ class ApiMiddleware(MiddlewareMixin):
                 )
             return HttpResponse(str(exception), status=400)
         elif isinstance(exception, BizException):
-            msg = get_text(f"err_{exception.error_code.code}")
-            response = dict(
-                status=exception.error_code.code,
-                msg=msg,
-                timestamp=datetime.now(),
-            )
             if settings.DEBUG:
                 _LOGGER.exception(
                     f"BizException: {print_msg}, path: {request.path}, uid: {user_id}"
@@ -67,12 +62,18 @@ class ApiMiddleware(MiddlewareMixin):
                 _LOGGER.warning(
                     f"BizException: {print_msg}, path: {request.path}, uid: {user_id}"
                 )
+
+            response = dict(
+                status=exception.error_code.code,
+                msg=f"err code: {exception.error_code.code}",
+                timestamp=datetime.now(),
+            )
             return JsonResponse(response, encoder=JsonEncoder, status=400)
         else:
-            response = dict(status=-1, msg="内部错误，请联系管理员", timestamp=timezone.now())
             _LOGGER.exception(
                 f"Exception: {print_msg}, path: {request.path}, uid: {user_id}"
             )
+            response = dict(status=-1, msg=_SERVER_ERR_MSG, timestamp=timezone.now())
             return JsonResponse(response, encoder=JsonEncoder, status=500)
 
     def process_response(self, request, response):
@@ -146,7 +147,7 @@ def handle_oper_record(req, resp):
         user_agent = shorten_user_agent(get_request_user_agent(req))
         if "/admin/login/" in req.path:  # 登录时去除密码明文
             resource = "admin_login"
-            operator = resp["id"]
+            operator = resp.get("id", 0)
             temp.pop("password")
 
         from peach.admin.services import admin_service
