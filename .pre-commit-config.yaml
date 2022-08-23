@@ -31,4 +31,4 @@ repos:
       language: system
       pass_filenames: false
       always_run: true
-      args: ["-c", "pytest.ini", "."]
+      # args: ["-c", "pytest.ini", "."]
