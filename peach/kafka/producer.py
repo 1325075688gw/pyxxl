@@ -34,6 +34,21 @@ class ProducerClient:
         )
         self._producer.poll(0)
 
+    def send_filled_data(self, topic: str, event: typing.Dict, key: str = None):
+        assert "ts" in event
+        assert "data" in event
+
+        if not self._initialized:
+            _LOGGER.info("kafka producer is not initialized yet")
+            return
+        self._producer.produce(
+            topic,
+            json.dumps(event),
+            key,
+            callback=self._delivery_callback,
+        )
+        self._producer.poll(0)
+
     def _fill_data(self, namespace: str, data: typing.Dict):
         return json.dumps(
             {
