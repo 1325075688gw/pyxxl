@@ -145,9 +145,9 @@ def handle_oper_record(req, resp):
         operator = req.user_id if hasattr(req, "user_id") else None
         ip = get_client_ip(req)
         user_agent = shorten_user_agent(get_request_user_agent(req))
-        if "/admin/login/" in req.path:  # 登录时去除密码明文
+        if "/admin/login/" in req.path and resp.get("id"):  # 登录时去除密码明文
             resource = "admin_login"
-            operator = resp.get("id", 0)
+            operator = resp["id"]
             temp.pop("password")
 
         from peach.admin.services import admin_service
