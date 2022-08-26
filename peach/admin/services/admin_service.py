@@ -610,11 +610,12 @@ def export_record(criteria: RecordListCriteria):
     _, items = get_record_list(criteria)
     data = []
     permission_parent_name_map = get_permission_parent_name_map()
+    user_map = dict(User.objects.values_list("id", "name"))
     for item in items:
         data.append(
             [
                 dt.utc_to_local_str(item.get("created_at")),
-                item.get("operator"),
+                user_map.get(item.get("operator"), ""),
                 permission_parent_name_map.get(item.get("resource"), ""),
                 item.get("resource_id"),
                 item.get("content"),
