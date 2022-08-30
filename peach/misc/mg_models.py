@@ -3,12 +3,10 @@ from peach.misc import dt
 
 
 class DBaseDocument(Document):
-    created_at = fields.DateTimeField()
-    updated_at = fields.DateTimeField(default=dt.local_now)
+    created_at = fields.DateTimeField(required=True, default=dt.local_now)
+    updated_at = fields.DateTimeField(required=True, default=dt.local_now)
 
     def save(self, *args, **kwargs):
-        if not self.created_at:
-            self.created_at = dt.local_now()
         self.updated_at = dt.local_now()
         return super().save(*args, **kwargs)
 
@@ -18,16 +16,17 @@ class DBaseDocument(Document):
             data["id"] = str(data.pop("_id"))
         return data
 
-    meta = {"abstract": True, "indexes": ["updated_at"]}
+    meta = {
+        "abstract": True,
+        "auto_create_index": False,
+    }
 
 
 class DBaseDynamicDocument(DynamicDocument):
-    created_at = fields.DateTimeField()
-    updated_at = fields.DateTimeField(default=dt.local_now)
+    created_at = fields.DateTimeField(required=True, default=dt.local_now)
+    updated_at = fields.DateTimeField(required=True, default=dt.local_now)
 
     def save(self, *args, **kwargs):
-        if not self.created_at:
-            self.created_at = dt.local_now()
         self.updated_at = dt.local_now()
         return super().save(*args, **kwargs)
 
@@ -37,4 +36,7 @@ class DBaseDynamicDocument(DynamicDocument):
             data["id"] = str(data.pop("_id"))
         return data
 
-    meta = {"abstract": True, "indexes": ["updated_at"]}
+    meta = {
+        "abstract": True,
+        "auto_create_index": False,
+    }
