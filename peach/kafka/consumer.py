@@ -9,6 +9,7 @@ from threading import Barrier, Thread
 import time
 import typing
 
+from django import db
 from confluent_kafka import Consumer
 
 from peach.kafka import producer
@@ -143,6 +144,7 @@ class ProcessorThread(Thread):
                 continue
 
             try:
+                db.close_old_connections()
                 for listener in self._route_listeners(event, topic):
                     listener.func(event)
                 self._on_successed()
