@@ -12,4 +12,3 @@ types-PyYAML
 types-redis
 types-requests
 types-urllib3
-mongomock
