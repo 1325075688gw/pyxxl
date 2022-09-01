@@ -1,1 +1,1 @@
-from .api import add_task, TaskHandler, Task  # noqa: F401
+from .api import add_task, cancel_task, TaskHandler  # noqa: F401

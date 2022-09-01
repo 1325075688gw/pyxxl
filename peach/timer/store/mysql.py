@@ -1,12 +1,12 @@
 import logging
 
 from django.db.models import F
-from django.utils import timezone
+from peach.misc import dt
 
 # 每次批量处理的任务数量
 from peach.timer.models import Task
 
-batch_undo_rows = 20
+batch_undo_rows = 10
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -22,10 +22,10 @@ class MySqlTaskStore:
     def finished_task(self, biz_code, biz_num):
         Task.objects.filter(biz_code=biz_code, biz_num=biz_num).delete()
 
-    def get_undo_tasks(self):
-        now = timezone.now()
+    def get_undo_tasks(self, count=None):
+        now = dt.local_now()
         undo_tasks = Task.objects.filter(status=0, when__lte=now).order_by("when")[
-            :batch_undo_rows
+            : count or batch_undo_rows
         ]
 
         lock_tasks = []
@@ -50,9 +50,9 @@ class MySqlTaskStore:
             tasks = tasks.filter(when__gt=when)
         return tasks
 
-    def retry_task(self, biz_code, biz_num, next_time):
+    def retry_task(self, biz_code, biz_num, next_time=None):
         Task.objects.filter(biz_code=biz_code, biz_num=biz_num).update(
-            when=next_time, status=0
+            when=next_time or dt.local_now(), status=0
         )
 
     def close(self):

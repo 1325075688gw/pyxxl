@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from django.utils import timezone
 
 from . import store
@@ -69,11 +67,6 @@ def shutdown():
     :return:
     """
     send_shutdown_signal()
-
-
-@dataclass
-class Task:
-    biz_num: str
 
 
 class TaskHandler:
