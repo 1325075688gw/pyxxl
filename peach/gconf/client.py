@@ -300,20 +300,29 @@ class GConfClient:
     def _exec_callbacks(self, first):
         # process dataclass bind
         for name, data in self.dataclasses.items():
-            if name in self.conf_items:
-                data_new = from_dict(
-                    data_class=type(data),
-                    data=self.get_dict(name),
-                    config=Config(
-                        cast=[Enum],
-                        type_hooks={
-                            datetime: lambda t: dt.from_timestamp(int(int(t) / 1000)),
-                            int: int,
-                        },
-                    ),
+            try:
+                if name in self.conf_items:
+                    data_new = from_dict(
+                        data_class=type(data),
+                        data=self.get_dict(name),
+                        config=Config(
+                            cast=[Enum],
+                            type_hooks={
+                                datetime: lambda t: dt.from_timestamp(
+                                    int(int(t) / 1000)
+                                ),
+                                int: int,
+                            },
+                        ),
+                    )
+                    for field in fields(type(data)):
+                        setattr(data, field.name, getattr(data_new, field.name))
+            except Exception:
+                _LOGGER.exception(
+                    "bind dataclass fail, {} - {}".format(name, data.__class__.__name__)
                 )
-                for field in fields(type(data)):
-                    setattr(data, field.name, getattr(data_new, field.name))
+                if first:
+                    sys.exit(1)
 
         # 处理回调函数
         for name, callback in self.callbacks.items():
