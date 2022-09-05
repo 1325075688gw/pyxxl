@@ -35,7 +35,7 @@ def msg_to_dto(msg: Message, data_class: Type) -> Any:
         data_class=data_class,
         data=data,
         config=Config(
-            cast=[Enum],
+            cast=[Enum, decimal.Decimal],
             type_hooks={
                 datetime: lambda t: dt.from_timestamp(int(int(t) / 1000)),
                 int: int,
