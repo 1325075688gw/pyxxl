@@ -7,6 +7,7 @@ from django.conf import settings
 from django.http import JsonResponse, HttpResponse, QueryDict
 from django.utils import timezone
 from django.utils.deprecation import MiddlewareMixin
+from peach.log import trace_logging
 
 from peach.admin.const import ACTION
 from peach.django.header import (
@@ -25,6 +26,7 @@ _SERVER_ERR_MSG = "Server Error"  # 500
 
 class ApiMiddleware(MiddlewareMixin):
     def process_request(self, request):
+        trace_logging.clear_trace()
         request.incoming_ts = int(timezone.now().timestamp() * 1000)
         request.DATA = QueryDict("")
         if request.method == "GET":
