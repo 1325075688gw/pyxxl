@@ -28,5 +28,9 @@ setup(
         "boto3==1.24.31",
         "openpyxl==3.0.10",
         "blinker==1.5",
+        "opentelemetry-sdk==1.12.0",
+        "opentelemetry-instrumentation-django==0.33b0",
+        "opentelemetry-instrumentation-grpc==0.33b0",
+        "opentelemetry-exporter-otlp-proto-grpc==1.12.0",
     ],
 )

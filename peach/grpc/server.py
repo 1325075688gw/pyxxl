@@ -65,7 +65,7 @@ class SecureServer(BaseServer):
     def init_server(self):
         self._server = grpc.server(
             ThreadPoolExecutor(max_workers=self._max_workers),
-            interceptors=(SignatureValidationInterceptor(self._auth_token),),
+            interceptors=[SignatureValidationInterceptor(self._auth_token)],
         )
         server_credentials = grpc.ssl_server_credentials(
             ((tuple(read_credential_file(p) for p in self._credentials_pair_paths)),)

@@ -18,6 +18,7 @@ from peach.log import trace_logging
 
 from peach.misc import dt
 from peach.misc.exceptions import BizException, IllegalRequestException
+from peach.otel import trace_helper
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,9 +84,11 @@ def wrap_response(resp: Message):
                 _resp.header.status = ex.error_code.code
                 _resp.header.msg = ex.error_code.message or ""
                 _LOGGER.debug(f"[invoke rpc BizException]: {func.__name__}, {ex}")
+                trace_helper.trace_exception(ex)
                 return _resp
-            except Exception:
+            except Exception as ex:
                 _LOGGER.exception(f"[invoke rpc error]: {func.__name__}")
+                trace_helper.trace_exception(ex)
                 raise
             if result:
                 Parse(
