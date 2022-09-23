@@ -78,5 +78,21 @@ class InSecureServer(BaseServer):
     Insecure tunnel, the data transmitted by the tunnel has risk of leakage
     """
 
+    def __init__(
+        self,
+        listen_address: str,
+        auth_token: str,
+        max_workers=5,
+    ):
+        """
+        :param auth_token: token used by authentication
+        """
+        self._auth_token = auth_token
+        super().__init__(listen_address, max_workers)
+
     def init_server(self):
-        self._server = grpc.server(ThreadPoolExecutor(max_workers=self._max_workers))
+        self._server = grpc.server(
+            ThreadPoolExecutor(max_workers=self._max_workers),
+            interceptors=[SignatureValidationInterceptor(self._auth_token)],
+        )
+        self._server.add_insecure_port(self._listen_address)
