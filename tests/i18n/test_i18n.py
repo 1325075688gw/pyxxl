@@ -20,13 +20,18 @@ def test_i18n():
 
 
 def test_parse_raw_lan():
-    raw_lan = "zh-CN,zh;q=0.9"
+
+    raw_lan = "zh"
+    lan = helper.parse_raw_lan(raw_lan)
+    assert lan == "zh"
+
+    raw_lan = "zh-CN"
     lan = helper.parse_raw_lan(raw_lan)
     assert lan == "zh-CN"
 
-    raw_lan = "xzh-CN,zh;q=0.9"
+    raw_lan = "zh-CN,zh;q=0.9"
     lan = helper.parse_raw_lan(raw_lan)
-    assert not lan
+    assert lan == "zh-CN"
 
     raw_lan = "Zh-CN,zh;q=0.9"
     lan = helper.parse_raw_lan(raw_lan)
@@ -34,4 +39,4 @@ def test_parse_raw_lan():
 
     raw_lan = "zh-cn,zh;q=0.9"
     lan = helper.parse_raw_lan(raw_lan)
-    assert not lan
+    assert lan == "zh"

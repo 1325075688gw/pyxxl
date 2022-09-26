@@ -20,11 +20,16 @@ def short_lan(lan: str) -> str:
 
 def parse_raw_lan(raw_lan: str) -> Optional[str]:
     """
-    :param raw_lan: zh-CN,zh;q=0.9
+    :param raw_lan: zh-CN,zh;q=0.9 | zh-CN | zh
     :return: zh-CN
     """
-    pattern = re.compile(r"^([a-z]{2}-[A-Z]{2}).*")
+    pattern = re.compile(r"^([a-z]{2})(-([A-Z]{2}).*)?")
     result = re.findall(pattern, raw_lan)
     if result:
-        return result[0]
+        matched = result[0]
+        lan = matched[0]  # zh
+        cn = matched[-1]  # CN
+        if cn:
+            return f"{lan}-{cn}"
+        return lan
     return None
