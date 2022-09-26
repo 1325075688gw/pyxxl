@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from .services import admin_service
 
 
@@ -12,3 +14,8 @@ def wrapper_record_info(record_items):
         record_item["resource_name"] = permission["name"]
         resp_items.append(record_item)
     return resp_items
+
+
+def wrapper_language_code(user_info: dict):
+    user_info["lang"] = settings.LANGUAGE_CODE
+    return user_info
