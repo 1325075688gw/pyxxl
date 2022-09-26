@@ -6,7 +6,7 @@ from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
 
 from peach.misc.dt import utc_to_local
-from . import local
+from . import local, helper
 from .text import ResouceLoader
 
 _LOGGER = logging.getLogger()
@@ -79,16 +79,53 @@ class LocaleMiddleware(MiddlewareMixin):
 
     def process_request(self, request):
         clear_local_lan()
-        lan = request.META.get(LocaleMiddleware._header_req_lan)
+        raw_lan = request.META.get(LocaleMiddleware._header_req_lan)
         if not _RES:
             _LOGGER.error(
                 "django i18n plugin : load_i18n_resource must be executed before the service starts"
             )
             return
-        if not lan:
+        if not raw_lan:
             lan = settings.LANGUAGE_CODE
-        if lan not in _RES.get_all_lans():
+        else:
+            lan = helper.parse_raw_lan(raw_lan)
+
+        short_lan = helper.short_lan(lan)
+        if short_lan not in _RES.get_all_lans():
             lan = _DEFAULT_LAN
+
+        set_local_lan(lan)
+        request.LANGUAGE_CODE = lan
+
+    def process_response(self, request, response):
+        response.setdefault("Content-Language", get_default_lan())
+        return response
+
+
+class PortalLocaleMiddleware(MiddlewareMixin):
+    """
+    Parse a request and decide what translation object to install in the
+    current thread context. This allows pages to be dynamically translated to
+    the language the user desires (if the language is available, of course).
+    """
+
+    def process_request(self, request):
+        clear_local_lan()
+        if not _RES:
+            _LOGGER.error(
+                "django i18n plugin : load_i18n_resource must be executed before the service starts"
+            )
+            return
+        p_dict = getattr(request, "p_dict")
+        if not p_dict:
+            lan = settings.LANGUAGE_CODE
+        else:
+            lan = f"{p_dict['lan']}-{p_dict['code'].upper()}"
+
+        short_lan = helper.short_lan(lan)
+        if short_lan not in _RES.get_all_lans():
+            lan = _DEFAULT_LAN
+
         set_local_lan(lan)
         request.LANGUAGE_CODE = lan
 
