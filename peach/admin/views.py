@@ -22,7 +22,7 @@ from .forms import (
     UpdateRoleSchema,
     RecordListSchema,
 )
-from .helper import wrapper_record_info
+from .helper import wrapper_record_info, wrapper_language_code
 from .services import admin_service
 from peach.django.decorators import validate_parameters
 from peach.django.views import BaseView, PaginationResponse
@@ -49,7 +49,7 @@ class LoginView(BaseView):
         check_user_vcode(request, user["id"])
         admin_service.update_user_login_count(user["id"])
         admin_service.update_user_last_login_time(user["id"])
-        return user
+        return wrapper_language_code(user)
 
 
 class LogoutView(BaseView):
