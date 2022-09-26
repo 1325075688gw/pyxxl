@@ -120,7 +120,7 @@ class PortalLocaleMiddleware(MiddlewareMixin):
         if not p_dict:
             lan = settings.LANGUAGE_CODE
         else:
-            lan = f"{p_dict['lan']-{p_dict['code'].upper()}}"
+            lan = f"{p_dict['lan']}-{p_dict['code'].upper()}"
 
         short_lan = helper.short_lan(lan)
         if short_lan not in _RES.get_all_lans():
