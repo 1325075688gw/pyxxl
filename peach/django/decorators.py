@@ -21,7 +21,7 @@ def validate_parameters(schema: object) -> typing.Callable:
                     "you must use @method_decorator(validate_parameters) if you use the class-based View."
                 )
 
-            content_type = request.META.get("CONTENT_TYPE")
+            content_type = request.META.get("CONTENT_TYPE", "")
             if request.method == "GET":
                 body = QueryDict(request.META["QUERY_STRING"])
                 body = json.loads(body.get("p")) if body.get("p") else body
