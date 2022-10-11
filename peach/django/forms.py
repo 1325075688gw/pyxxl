@@ -2,6 +2,8 @@ import typing
 from abc import abstractmethod
 from enum import Enum
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from django.utils import timezone
 from marshmallow import Schema, fields, validates, ValidationError, post_load
 
@@ -221,6 +223,18 @@ class StripStrField(fields.Str):
         if self.required and not stripped_str:
             raise self.make_error("前后不能有空格")
         return stripped_str
+
+
+class ObjectIdField(fields.Str):
+    def _deserialize(self, value, attr, data, **kwargs) -> typing.Any:
+        value_str = super()._deserialize(value, attr, data, **kwargs)
+        try:
+            ObjectId(value_str)
+        except (TypeError, InvalidId):
+            raise ValidationError(
+                f"value: {repr(value)} is not a valid 24-character hex string."
+            )
+        return value_str
 
 
 class ExportSchema(PaginationSchema):
