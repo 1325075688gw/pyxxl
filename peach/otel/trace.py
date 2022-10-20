@@ -12,6 +12,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor, ConsoleSpanExport
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.pymongo import PymongoInstrumentor
+from peach.otel.instrumentation import pymysql as pymysql_instrumentation
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,5 +67,5 @@ class OtelTrace:
     def _db_instrument(self):
         """启用 db 自动检测"""
         PymongoInstrumentor().instrument()  # MongoDB trace
-        # PyMySQLInstrumentor().instrument()  # MySQL trace(有报错，暂时无法使用，需要研究一下)
+        pymysql_instrumentation.PyMySQLInstrumentor().instrument()  # MySQL trace
         # RedisInstrumentor().instrument()  # Redis trace(感觉意义不大，暂不启用)
