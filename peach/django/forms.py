@@ -221,7 +221,9 @@ class StripStrField(fields.Str):
     def _deserialize(self, value, attr, data, **kwargs):
         stripped_str = super()._deserialize(value, attr, data, **kwargs).strip()
         if self.required and not stripped_str:
-            raise self.make_error("前后不能有空格")
+            raise ValidationError(
+                f"value: {repr(stripped_str)} cannot be blank characters"
+            )
         return stripped_str
 
 
