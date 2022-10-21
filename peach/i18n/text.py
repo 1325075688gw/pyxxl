@@ -3,6 +3,8 @@ import csv
 import logging
 import os
 import typing
+from enum import IntEnum
+from io import StringIO
 
 from peach.i18n.helper import short_lan
 
@@ -13,29 +15,49 @@ class I18NException(Exception):
     pass
 
 
-class ResouceLoader:
-    def __init__(self, path: str) -> None:
-        if not os.path.isfile(path):
-            raise ValueError(f"The languages resource does not seem to exist: {path}")
+class SourceType(IntEnum):
+    FILE_PATH = 0
+    CONTENT = 1
+
+
+class ResourceLoader:
+    def __init__(
+        self, source: str, source_type: SourceType = SourceType.FILE_PATH
+    ) -> None:
+        if source_type == SourceType.FILE_PATH and not os.path.isfile(source):
+            raise ValueError(f"The languages resource does not seem to exist: {source}")
 
         # {[msg_id]: {[lan]: [text]}}
         self._texts: typing.Dict[str, typing.Dict[str, str]] = {}
         # {[col_num]: [lan]}
         self._headers: typing.Dict[int, str] = {}
-
-        first_row = True
-        with open(path, "r") as f:
-            reader = csv.reader(f, delimiter=",")
-            row_num = -1
-            for row in reader:
-                row_num += 1
-                if first_row:
-                    self._parse_headers(row)
-                    first_row = False
-                else:
-                    self._parse_texts(row_num, row)
+        self._parse_source(source, source_type)
 
         _LOGGER.info("Load i18n resource success")
+
+    def _parse_source(
+        self, source: str, source_type: SourceType = SourceType.FILE_PATH
+    ):
+        if source_type == SourceType.FILE_PATH:
+            with open(source, "r") as f:
+                reader = csv.reader(f, delimiter=",")
+                self._parse_reader(reader)
+        elif source_type == SourceType.CONTENT:
+            # 对source有严格的要求，输入的source需要有自己的校验
+            content = StringIO(source)
+            reader = csv.reader(content, delimiter=",")
+            self._parse_reader(reader)
+
+    def _parse_reader(self, reader):
+        first_row = True
+        row_num = -1
+        for row in reader:
+            row_num += 1
+            if first_row:
+                self._parse_headers(row)
+                first_row = False
+            else:
+                self._parse_texts(row_num, row)
 
     def _parse_headers(self, headers: typing.List[str]):
         self._check_headers_format(headers)

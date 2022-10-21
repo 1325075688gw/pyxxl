@@ -13,3 +13,8 @@ DATABASES = {
         "HOST": "127.0.0.1",
     }
 }
+
+try:
+    from .settings_local import *  # noqa: F403 F401
+except Exception:
+    pass
