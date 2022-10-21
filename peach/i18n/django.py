@@ -7,23 +7,25 @@ from django.utils.deprecation import MiddlewareMixin
 
 from peach.misc.dt import utc_to_local
 from . import local, helper
-from .text import ResouceLoader
+from .text import ResourceLoader, SourceType
 
 _LOGGER = logging.getLogger()
 
 _LOCAL = threading.local()
 
-_RES: ResouceLoader = None
+_RES: ResourceLoader = None
 
 _DEFAULT_LAN = "en"
 
 
-def load_i18n_resource(path: str):
+def load_i18n_resource(source: str, source_type: SourceType = SourceType.FILE_PATH):
     global _RES
     try:
-        _RES = ResouceLoader(path)
-    except Exception:
-        _LOGGER.exception(f"load i18n src fail, path: {path}")
+        _RES = ResourceLoader(source, source_type)
+    except Exception as e:
+        _LOGGER.exception(
+            f"load i18n src fail, source: {source}, source_type: {source_type}, err: {e}"
+        )
 
 
 def set_local_lan(lan: str):
