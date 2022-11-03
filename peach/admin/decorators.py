@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import HttpRequest
 
 from .exceptions import (
-    ERROR_PERMISSION_NOT_AUTHORIZED,
     ERROR_LIST_FUNC_MISS_ARGS,
     ERROR_USER_TOKEN_NOT_EXISTS,
     ERROR_VCODE_EMPTY,
@@ -13,6 +12,7 @@ from .exceptions import (
 )
 from .services import admin_service
 from .safe_dog import safe_client
+from . import auth
 from peach.misc.exceptions import BizException
 
 
@@ -45,18 +45,7 @@ def check_permission(permission_code):
     def decorator(func):
         def wrapper(*args, **kwargs):
             request = args[0]
-            request.permission_code = permission_code
-            assert isinstance(request, HttpRequest)
-            all_permission_codes = admin_service.get_user_all_permission_codes(
-                request.user_id
-            )
-            perms = (
-                set(permission_code)
-                if isinstance(permission_code, list)
-                else {permission_code}
-            )
-            if not perms.intersection(all_permission_codes):
-                raise BizException(ERROR_PERMISSION_NOT_AUTHORIZED)
+            auth.check_permission(permission_code, request)
             return func(*args, **kwargs)
 
         return wrapper
