@@ -15,15 +15,18 @@ def test_memcached():
         _is_fetch.value = False
         return memcached.get("test_key", fetch_func=_fetch_func, expire_sec=5)
 
+    memcached.delete("test_key")
+
     data = _query()
     assert data == _test_data
     assert _is_fetch.value is True
 
+    time.sleep(1)
     data = _query()
     assert data == _test_data
     assert _is_fetch.value is False
 
-    time.sleep(6)
+    time.sleep(5)
     data = _query()
     assert data == _test_data
     assert _is_fetch.value is True
