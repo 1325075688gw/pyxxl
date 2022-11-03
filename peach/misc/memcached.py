@@ -15,7 +15,9 @@ memcached_client = HashClient(
 _enable = settings.MEMCACHED_ENABLE
 
 
-def get(key: str, fetch_func: typing.Callable[[], typing.Any] = None):
+def get(
+    key: str, fetch_func: typing.Callable[[], typing.Any] = None, expire_sec: int = 0
+):
     """
     get cached value by key and return it if it exists, otherwise,
     get the value by 'fetch_func' and set it into the cache.
@@ -29,7 +31,7 @@ def get(key: str, fetch_func: typing.Callable[[], typing.Any] = None):
     if fetch_func:
         value = fetch_func()
         if value is not None:
-            _set(key, value)
+            _set(key, value, expire_sec)
     return value
 
 
@@ -55,8 +57,8 @@ def _get(key: str):
         return None, ex
 
 
-def _set(key, value):
+def _set(key, value, expire_sec=0):
     try:
-        memcached_client.set(key, value)
+        memcached_client.set(key, value, expire=expire_sec)
     except Exception:
         _LOGGER.exception(f"Memcached Set Fail: {key}")
