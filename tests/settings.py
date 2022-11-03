@@ -14,6 +14,9 @@ DATABASES = {
     }
 }
 
+MEMCACHED_ENABLE = True
+MEMCACHED_URL = '127.0.0.1:11211'
+
 try:
     from .settings_local import *  # noqa: F403 F401
 except Exception:
