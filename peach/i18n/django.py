@@ -18,6 +18,10 @@ _RES: ResourceLoader = None
 _DEFAULT_LAN = "en"
 
 
+def exist_i18n_resource() -> bool:
+    return False if _RES is None else True
+
+
 def load_i18n_resource(source: str, source_type: SourceType = SourceType.FILE_PATH):
     global _RES
     try:
