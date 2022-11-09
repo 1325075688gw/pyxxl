@@ -9,6 +9,7 @@ from django.db import transaction
 from django.db.models import F
 
 from peach.report.api import report_decorator
+from peach.i18n.django import get_text, exist_i18n_resource
 from peach.misc import dt
 from .. import signals
 from ..const import ActionDesc
@@ -461,7 +462,13 @@ def get_total_permission_tree():
     """
     result = []
     index_map = copy.deepcopy(get_permission_index_map_cache())
+
+    need_translate = exist_i18n_resource()
+
     for pk, each in index_map.items():
+        if need_translate:
+            each["name"] = get_text(msg_id=each["code"])
+
         if each["parent_id"]:
             parent = index_map[each["parent_id"]]
             if "children" in parent:
