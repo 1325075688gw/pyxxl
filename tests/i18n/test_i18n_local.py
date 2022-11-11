@@ -29,15 +29,26 @@ def test_format_credit_by_vn():
 
 def test_format_credit_by_id():
     nation = "id-id"
-    amount_m = 1000000000
-    di_amount_m = format_amount(amount_m, nation)
-    assert di_amount_m == "1M"
-    amount_m = 1000000000000
-    di_amount_m = format_amount(amount_m, nation)
-    assert di_amount_m == "1,000M"
-    amount_m_float = 1200323539000
-    di_amount_m_float = format_amount(amount_m_float, nation)
-    assert di_amount_m_float == "1,200.32M"
+    amount = 100000.01999999
+    assert format_amount(amount, nation) == "100"
+    amount = 10000
+    assert format_amount(amount, nation) == "10"
+    amount = 1000000.02
+    assert format_amount(amount, nation) == "1K"
+    amount = 1002000.02
+    assert format_amount(amount, nation) == "1,002"
+    amount = 102450000.88
+    assert format_amount(amount, nation) == "102.45K"
+    amount = 98100000.34
+    assert format_amount(amount, nation) == "98.10K"
+    amount = 1000000000
+    assert format_amount(amount, nation) == "1M"
+    amount = 1000000000.02
+    assert format_amount(amount, nation) == "1M"
+    amount = 1634000000.02
+    assert format_amount(amount, nation) == "1.63M"
+    amount = 1634000000000.02
+    assert format_amount(amount, nation) == "1,634M"
 
 
 def test_format_credit_by_br():

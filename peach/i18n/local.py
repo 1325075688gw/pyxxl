@@ -14,8 +14,8 @@ _TO_K = 1000
 
 # 基本单位
 _M = 1000000
-_K = 1000
 _CR = 10000000
+_K = 1000
 
 GAME_AMOUNT_RATIO = 1000  # 厘
 
@@ -31,8 +31,8 @@ def format_datetime(dt: datetime, lan: str) -> str:
 
 
 def format_amount(
-    amount: int or float,
-    lan: str,
+        amount: int or float,
+        lan: str,
 ) -> str:
     assert isinstance(amount, (int, float))
     assert lan
@@ -78,15 +78,29 @@ class BRFormatter(BaseFormatter):
 @singleton
 class IDFormatter(BaseFormatter):
     # 印尼邮件金额格式化
+    """
+    邮件金额位数：
+         1）金额<1000，直接显示用户余额，舍弃小数；
+         2）1000≤金额<1,000,000
+            a.个位=0，则以K为单位，并保留两位小数;
+            b.个位≠0，则直接显示用户余额，显示千分位，舍弃小数；
+        3）金币≥1,000,000，以M为单位，显示千分位，保留两位小数
+    保留两位小数时：
+        1）如果两位小数都是0，则不显示。例如，102.00K，则展示成102K即可。
+        1）其他情况，则保留两位小数。例如102.45K=102.45K，102.90M=102.90M
+    """
+
     def convert_amount(self, amount: int or float) -> str:
-        if amount >= _TO_M:
-            m_amount = amount / _M
-            if m_amount == int(m_amount):
-                amount = f"{format(int(m_amount), ',')}M"
+        amount = int(amount)
+        if amount < _K:
+            return str(amount)
+        elif _TO_K <= amount < _TO_M:
+            if str(amount)[-1] == "0":
+                return f"{_format_amount_two_digits(amount / _K)}K"
             else:
-                amount = f"{format(_format_amount_two_digits(m_amount), ',')}M"
-            return amount
-        return str(_format_amount_two_digits(amount))
+                return format(int(amount), ',')
+        else:
+            return f"{format(_format_amount_two_digits(amount / _M), ',')}M"
 
 
 @singleton
