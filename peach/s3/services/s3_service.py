@@ -13,9 +13,12 @@ def generate_pre_url(key, bucket_name, is_upload=True, expiresIn=60):
     client_method = "put_object" if is_upload else "get_object"
     my_config = Config(region_name=settings.S3_CONF["region_name"])
 
+    default_endpoint_url = f"https://s3.{settings.S3_CONF['region_name']}.amazonaws.com"
+
     pre_url = boto3.client(
         "s3",
         config=my_config,
+        endpoint_url=settings.S3_CONF.get("endpoint_url", default_endpoint_url),
         aws_access_key_id=settings.S3_CONF["aws_access_key_id"],
         aws_secret_access_key=settings.S3_CONF["aws_secret_access_key"],
     ).generate_presigned_url(
