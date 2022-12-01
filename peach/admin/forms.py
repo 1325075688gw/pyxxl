@@ -19,6 +19,10 @@ class LoginSchema(BaseSchema):
     password = fields.String(required=True)
 
 
+class LoginByTokenSchema(BaseSchema):
+    callback_token = fields.String(required=True)
+
+
 class AddUserSchema(BaseSchema):
     name = fields.String(required=True)
     password = fields.String(required=True)

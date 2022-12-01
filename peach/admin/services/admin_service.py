@@ -12,7 +12,7 @@ from peach.report.api import report_decorator
 from peach.i18n.django import get_text, exist_i18n_resource
 from peach.misc import dt
 from .. import signals
-from ..const import ActionDesc
+from ..const import ActionDesc, DEFAULT_PASSWORD
 
 from ..exceptions import (
     ERROR_USER_NOT_EXISTS,
@@ -30,6 +30,8 @@ from ..exceptions import (
     ERROR_USER_ROLES_NOT_EXISTS,
     ERROR_ROLE_CAN_NOT_DELETE,
     ERROR_ILLEGAL_PARAMS,
+    ERROR_DISABLE_LOGIN_BY_TOKEN,
+    ERROR_DISABLE_LOGIN_BY_PASSWORD,
 )
 from ..models import User, Role, RolePermissionRel, Permission, Record, Token
 from ..dto import UserListCriteria, RoleListCriteria, RecordListCriteria
@@ -38,7 +40,33 @@ from peach.django.models import paginate
 from peach.misc.exceptions import BizException
 
 
-def add_user(name, password, role_ids=None, parent_id=None, enable=None):
+def login_by_token(name, is_super):
+    if getattr(settings, "LOGIN_BY_TOKEN_ENABLE", False) is False:
+        raise BizException(ERROR_DISABLE_LOGIN_BY_TOKEN)
+
+    user_info = get_or_create_user(name, is_super)
+
+    token = create_token(user_info["id"])
+    user_info.update(dict(token=token))
+    return user_info
+
+
+def get_or_create_user(name: str, is_super: bool) -> dict:
+    user = User.objects.filter(name=name).first()
+    if user is None:
+        user_info = add_user(name, DEFAULT_PASSWORD, enable=True, is_super=is_super)
+    elif user.enable and (not user.deleted):
+        user_info = user.to_dict(
+            exclude=["password", "deleted"], return_many_to_many=True
+        )
+    else:
+        raise BizException(ERROR_USER_NAME_DUPLICATE)
+    return user_info
+
+
+def add_user(
+    name, password, role_ids=None, parent_id=None, enable=None, is_super=False
+):
     """
     新增用户
     """
@@ -55,7 +83,11 @@ def add_user(name, password, role_ids=None, parent_id=None, enable=None):
     )
     with transaction.atomic():
         user = User.objects.create(
-            name=name, password=encrypted_pwd, parent=parent, enable=enable
+            name=name,
+            password=encrypted_pwd,
+            parent=parent,
+            enable=enable,
+            is_super=is_super,
         )
         _bind_user_to_groups(user, role_ids)
         signals.post_add_user.send(sender=User, instance=user)
@@ -196,6 +228,9 @@ def delete_token(user_id, token):
 
 
 def login(name, password):
+    if getattr(settings, "LOGIN_BY_PASSWORD_ENABLE", True) is False:
+        raise BizException(ERROR_DISABLE_LOGIN_BY_PASSWORD)
+
     user = verify_password(name, password)
     if not user["is_super"] and not user["roles"]:
         raise BizException(ERROR_USER_ROLES_NOT_EXISTS)

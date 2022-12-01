@@ -26,6 +26,7 @@ setup(
         "marshmallow==3.5.1",
         "pandas==1.4.2",
         "boto3==1.24.31",
+        "bcrypt==4.0.1",
         "openpyxl==3.0.10",
         "blinker==1.5",
         "opentelemetry-api==1.12.0",

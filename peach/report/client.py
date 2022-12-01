@@ -20,10 +20,9 @@ from requests import RequestException
 from . import filelock
 from .dtos import TaskListCriteria
 from .engines import Csv, Xlsx
-from .retry import retry
 
 from peach.django.json import JsonEncoder
-from peach.misc import dt
+from peach.misc import dt, retry
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -270,7 +269,7 @@ class ReportClient:
     def _gen_filename(self, file_type):
         return str(uuid.uuid4()) + _FILE_EXTENSION[file_type]
 
-    @retry(RequestException)
+    @retry.retry(RequestException)
     def _rpc_upload_task(
         self,
         client_id,

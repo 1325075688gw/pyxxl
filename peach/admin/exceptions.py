@@ -28,3 +28,7 @@ ERROR_EXPORT_REPORT_FAILED = BizErrorCode(2000, "报表导出失败")
 
 ERROR_VCODE_EMPTY = BizErrorCode(3215, "验证码为空")
 ERROR_VCODE_INCORRECT = BizErrorCode(3216, "验证码错误")
+
+ERROR_SSO_CALLBACK_FAILED = BizErrorCode(3300, "sso callback failed")
+ERROR_DISABLE_LOGIN_BY_TOKEN = BizErrorCode(3301, "disable login by token")
+ERROR_DISABLE_LOGIN_BY_PASSWORD = BizErrorCode(3302, "disable login by password")

@@ -13,6 +13,7 @@ from .dto import UserListCriteria, RoleListCriteria, RecordListCriteria
 from .forms import (
     RegisterSchema,
     LoginSchema,
+    LoginByTokenSchema,
     UpdateUserPasswordSchema,
     GetUserSchema,
     AddUserSchema,
@@ -23,7 +24,7 @@ from .forms import (
     RecordListSchema,
 )
 from .helper import wrapper_record_info, wrapper_language_code
-from .services import admin_service
+from .services import admin_service, sso_service
 from peach.django.decorators import validate_parameters
 from peach.django.views import BaseView, PaginationResponse
 from peach.report import ReportClient
@@ -50,6 +51,16 @@ class LoginView(BaseView):
         admin_service.update_user_login_count(user["id"])
         admin_service.update_user_last_login_time(user["id"])
         return wrapper_language_code(user)
+
+
+class LoginByToken(BaseView):
+    @method_decorator(validate_parameters(LoginByTokenSchema))
+    def post(self, request, cleaned_data):
+        res = sso_service.verify_token(cleaned_data["callback_token"])
+        user_info = admin_service.login_by_token(
+            name=res.username, is_super=res.is_admin
+        )
+        return wrapper_language_code(user_info)
 
 
 class LogoutView(BaseView):

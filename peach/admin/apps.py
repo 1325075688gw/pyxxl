@@ -8,5 +8,6 @@ class AdminConfig(AppConfig):
     name = "peach.admin"
 
     def ready(self) -> None:
-        if not settings.DEBUG:
+
+        if (not settings.DEBUG) and hasattr(settings, "SAFE_DOG_CONFIG"):
             safe_dog.safe_client = safe_dog.SafeDogClient(**settings.SAFE_DOG_CONFIG)
