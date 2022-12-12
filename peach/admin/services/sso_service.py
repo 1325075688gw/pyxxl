@@ -69,7 +69,7 @@ class SSOClient:
 @dataclass
 class VerifyTokenDto:
     username: str
-    is_admin: bool
+    is_super: bool
 
 
 @retry.retry(requests.RequestException)
