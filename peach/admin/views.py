@@ -58,7 +58,7 @@ class LoginByToken(BaseView):
     def post(self, request, cleaned_data):
         res = sso_service.verify_token(cleaned_data["callback_token"])
         user_info = admin_service.login_by_token(
-            name=res.username, is_super=res.is_admin
+            name=res.username, is_super=res.is_super
         )
         return wrapper_language_code(user_info)
 
