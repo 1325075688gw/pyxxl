@@ -66,7 +66,7 @@ class GConfClient:
         # 创建集群数据目录
         self.cluster_data_dir = os.path.join(conf_data_dir, cluster)
         if not os.path.exists(self.cluster_data_dir):
-            os.makedirs(self.cluster_data_dir)
+            os.makedirs(self.cluster_data_dir, exist_ok=True)
         # 当前配置元数据：当前使用版本
         self.conf_meta_file = os.path.join(self.cluster_data_dir, "meta")
 
