@@ -30,7 +30,10 @@ def read_credential_file(path):
 
 def msg_to_dto(msg: Message, data_class: Type) -> Any:
     data = MessageToDict(
-        msg, use_integers_for_enums=True, preserving_proto_field_name=True
+        msg,
+        use_integers_for_enums=True,
+        preserving_proto_field_name=True,
+        including_default_value_fields=True,
     )
     return from_dict(
         data_class=data_class,
