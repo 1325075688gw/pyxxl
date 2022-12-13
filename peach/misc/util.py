@@ -1,3 +1,4 @@
+import decimal
 import typing
 from datetime import datetime
 from enum import Enum
@@ -13,7 +14,7 @@ def dict_to_dto(data: typing.Dict, data_class: Type) -> Any:
         data_class=data_class,
         data=data,
         config=Config(
-            cast=[Enum],
+            cast=[Enum, decimal.Decimal],
             type_hooks={
                 datetime: lambda t: dt.from_timestamp(int(int(t) / 1000)),
                 int: int,
