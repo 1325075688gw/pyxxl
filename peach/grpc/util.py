@@ -8,7 +8,6 @@ from functools import wraps
 from typing import Type, Any, Union
 import typing
 
-from dacite import from_dict, Config
 from django.conf import settings
 from google.protobuf.json_format import MessageToDict, Parse
 from google.protobuf.message import Message
@@ -16,8 +15,8 @@ from google.protobuf.message import Message
 from django import db
 from peach.log import trace_logging
 
-from peach.misc import dt
 from peach.misc.exceptions import BizException, IllegalRequestException
+from peach.misc.util import dict_to_dto
 from peach.otel import trace_helper
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,19 +32,22 @@ def msg_to_dto(msg: Message, data_class: Type) -> Any:
         msg,
         use_integers_for_enums=True,
         preserving_proto_field_name=True,
+    )
+    return dict_to_dto(data, data_class)
+
+
+def msg_to_dto_v2(msg: Message, data_class: Type) -> Any:
+    """
+    注意使用该方法，不会忽略 Proto 中的默认值（即使传递的值和默认值相同）。
+    所以转换后的 DTO 在进行需要对字段的判断场景时需要注意使用 xxx is None 还是 not xxx
+    """
+    data = MessageToDict(
+        msg,
+        use_integers_for_enums=True,
+        preserving_proto_field_name=True,
         including_default_value_fields=True,
     )
-    return from_dict(
-        data_class=data_class,
-        data=data,
-        config=Config(
-            cast=[Enum, decimal.Decimal],
-            type_hooks={
-                datetime: lambda t: dt.from_timestamp(int(int(t) / 1000)),
-                int: int,
-            },
-        ),
-    )
+    return dict_to_dto(data, data_class)
 
 
 def data_to_message(data: Union[Any, dict], msg_class: Type[Message]) -> Message:
