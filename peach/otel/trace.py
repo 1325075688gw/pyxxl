@@ -5,6 +5,8 @@ from opentelemetry.instrumentation.grpc import (
     GrpcInstrumentorClient,
     GrpcInstrumentorServer,
 )
+from opentelemetry.instrumentation.redis import RedisInstrumentor
+
 from peach.otel.conf import TraceConf
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
@@ -13,6 +15,7 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.pymongo import PymongoInstrumentor
 from peach.otel.instrumentation import pymysql as pymysql_instrumentation
+from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,6 +33,7 @@ class OtelTrace:
             self._grpc_client_instrument()
         if self.conf.enable_grpc_server:
             self._grpc_server_instrument()
+        self._requests_instrument()
 
     def init_trace_provider(self):
         """初始化 trace"""
@@ -68,4 +72,8 @@ class OtelTrace:
         """启用 db 自动检测"""
         PymongoInstrumentor().instrument()  # MongoDB trace
         pymysql_instrumentation.PyMySQLInstrumentor().instrument()  # MySQL trace
-        # RedisInstrumentor().instrument()  # Redis trace(感觉意义不大，暂不启用)
+        RedisInstrumentor().instrument()  # Redis trace
+
+    def _requests_instrument(self):
+        """启用 requests 自动检测"""
+        RequestsInstrumentor().instrument()

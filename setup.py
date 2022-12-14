@@ -35,7 +35,8 @@ setup(
         "opentelemetry-instrumentation-grpc==0.33b0",
         "opentelemetry-instrumentation-pymysql==0.33b0",
         "opentelemetry-instrumentation-pymongo==0.33b0",
-        # "opentelemetry-instrumentation-redis==0.33b0",
+        "opentelemetry-instrumentation-redis==0.33b0",
+        "opentelemetry-instrumentation-requests==0.33b0",
         "opentelemetry-exporter-otlp-proto-grpc==1.12.0",
     ],
 )
