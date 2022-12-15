@@ -142,7 +142,9 @@ class ReportClient:
         self._executor()
 
     def _executor(self):
-        _LOGGER.info(f"start export tasks: {len(self.cur_task)} now: {dt.local_now()}")
+        _LOGGER.info(
+            f"[ReportTask] executor undo_tasks count: {len(self.cur_task)} now: {dt.local_now()}"
+        )
         for task_id in list(self.cur_task.keys()):
             try_count = 0
             success = False
@@ -169,9 +171,22 @@ class ReportClient:
                     filter_params["page_no"] = report_task_info.page_no
                     filter_params["page_size"] = report_task_info.page_size
                     items_count = 0
+                    _LOGGER.info(
+                        f"[ReportTask] start task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
+                        f"try_count: {try_count}, now: {dt.local_now()}"
+                    )
                     while True:
+                        query_start = dt.now_ts()
                         count, header, items = func(filter_params)
+                        _LOGGER.info(
+                            f"[ReportTask] task: {task_id}, page_no: {filter_params['page_no']}, count: {count} query cost: {dt.now_ts() - query_start}s"
+                        )
+
+                        save_start = dt.now_ts()
                         engine.process_page(items, header=header)
+                        _LOGGER.info(
+                            f"[ReportTask] task: {task_id}, page_no: {filter_params['page_no']}, count: {count}, save cost: {dt.now_ts() - save_start}s"
+                        )
 
                         if not items:
                             break
@@ -179,13 +194,24 @@ class ReportClient:
                         filter_params["page_no"] += 1
                         if filter_params["page_no"] > MAX_PAGE_NUMS:
                             break
+
+                    export_start = dt.now_ts()
                     engine.export()
+                    _LOGGER.info(
+                        f"[ReportTask] task: {task_id}, items_count:{items_count}, export cost: {dt.now_ts() - export_start}s"
+                    )
+
+                    upload_start = dt.now_ts()
                     self._upload_file(task_id, items_count)
+                    _LOGGER.info(
+                        f"[ReportTask] task: {task_id}, items_count:{items_count}, upload cost: {dt.now_ts() - upload_start}s"
+                    )
                     success = True
                 except Exception as e:
                     try_count += 1
                     _LOGGER.exception(
-                        f"cached executor export task: {e}, {task_id} - {try_count}",
+                        f"[ReportTask] cached {e}, task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
+                        f"try_count: {try_count}, now: {dt.local_now()}",
                         exc_info=True,
                     )
             if not success:
@@ -193,7 +219,8 @@ class ReportClient:
                 pass
             del self.cur_task[task_id]
             _LOGGER.info(
-                f"export task_id: {task_id} finished, tasks: {len(self.cur_task)}, now: {dt.local_now()}"
+                f"[ReportTask] finished task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
+                f"undo_tasks: {len(self.cur_task)}, try_count: {try_count}, now: {dt.local_now()}"
             )
             self._save_conf_to_local()
 
