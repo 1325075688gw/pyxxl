@@ -36,12 +36,7 @@ class ExportDataABC(ABC):
     @property
     def export_data(self) -> pd.DataFrame:
         try:
-            data_frame = pd.DataFrame(columns=self._header)
-            for data in self.read_pickle():
-                data_frame = pd.concat(
-                    [data_frame, pd.DataFrame(data, columns=self._header)]
-                )
-            return data_frame
+            return pd.DataFrame(self.read_pickle(), columns=self._header)
         finally:
             self.remove_pickle()
 
@@ -56,7 +51,8 @@ class ExportDataABC(ABC):
         with open(self._pickle_file_name, "rb") as f:
             while True:
                 try:
-                    yield pickle.load(f)
+                    for line in pickle.load(f):
+                        yield line
                 except EOFError:
                     break
         self.remove_pickle()

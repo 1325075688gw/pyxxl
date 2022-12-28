@@ -29,6 +29,8 @@ from peach.django.decorators import validate_parameters
 from peach.django.views import BaseView, PaginationResponse
 from peach.report import ReportClient
 from peach.report.api import report_client
+from .services.admin_service import export_record
+
 
 #######################################
 #######################################
@@ -253,5 +255,6 @@ class RecordListView(BaseView):
             file_type=ReportClient.FileType.XLSX,
             user_id=request.user_id,
             filter_params=asdict(cleaned_data),
+            executor=export_record,  # 指定导出任务执行函数，优先级高于配置文件中的配置
         )
         return dict(task_id=res["id"])

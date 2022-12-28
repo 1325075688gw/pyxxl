@@ -1,5 +1,6 @@
 #! -*- coding:utf-8 -*-
 import hashlib
+import importlib
 import json
 import logging
 import os
@@ -18,7 +19,7 @@ from dacite import from_dict, Config
 from requests import RequestException
 
 from . import filelock
-from .dtos import TaskListCriteria
+from .dtos import TaskListCriteria, TaskExecutor
 from .engines import Csv, Xlsx
 
 from peach.django.json import JsonEncoder
@@ -26,7 +27,7 @@ from peach.misc import dt, retry
 
 _LOGGER = logging.getLogger(__name__)
 
-MAX_PAGE_NUMS = 100
+MAX_PAGE_NUMS = 200
 MAX_RETRY_COUNT = 3
 
 
@@ -105,7 +106,12 @@ class ReportClient:
         page_size=1000,
         remark=None,
         filter_params=None,
+        executor=None,
     ):
+        self._register_executor(
+            TaskExecutor(report_type=report_type, executor=executor)
+        )
+
         assert report_type in ReportClient.report_types
         assert isinstance(file_type, self.FileType)
         filter_params = filter_params or dict()
@@ -171,6 +177,8 @@ class ReportClient:
                     filter_params["page_no"] = report_task_info.page_no
                     filter_params["page_size"] = report_task_info.page_size
                     items_count = 0
+
+                    task_start = dt.now_ts()
                     _LOGGER.info(
                         f"[ReportTask] start task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
                         f"try_count: {try_count}, now: {dt.local_now()}"
@@ -178,14 +186,15 @@ class ReportClient:
                     while True:
                         query_start = dt.now_ts()
                         count, header, items = func(filter_params)
-                        _LOGGER.info(
-                            f"[ReportTask] task: {task_id}, page_no: {filter_params['page_no']}, count: {count} query cost: {dt.now_ts() - query_start}s"
-                        )
+                        query_end = dt.now_ts()
 
                         save_start = dt.now_ts()
                         engine.process_page(items, header=header)
+                        save_end = dt.now_ts()
+
                         _LOGGER.info(
-                            f"[ReportTask] task: {task_id}, page_no: {filter_params['page_no']}, count: {count}, save cost: {dt.now_ts() - save_start}s"
+                            f"[ReportTask] task: {task_id}, page_no: {filter_params['page_no']}, count: {count}, "
+                            f"query cost: {query_end - query_start}s, save cost: {save_end - save_start}s"
                         )
 
                         if not items:
@@ -201,26 +210,21 @@ class ReportClient:
                         f"[ReportTask] task: {task_id}, items_count:{items_count}, export cost: {dt.now_ts() - export_start}s"
                     )
 
-                    upload_start = dt.now_ts()
                     self._upload_file(task_id, items_count)
-                    _LOGGER.info(
-                        f"[ReportTask] task: {task_id}, items_count:{items_count}, upload cost: {dt.now_ts() - upload_start}s"
-                    )
                     success = True
                 except Exception as e:
                     try_count += 1
                     _LOGGER.exception(
                         f"[ReportTask] cached {e}, task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
-                        f"try_count: {try_count}, now: {dt.local_now()}",
+                        f"try_count: {try_count}, now: {dt.local_now()}, total cost: {dt.now_ts() - task_start}s",
                         exc_info=True,
                     )
             if not success:
-                # self._rpc_update_task(task_id)
-                pass
+                self._rpc_update_task(task_id)
             del self.cur_task[task_id]
             _LOGGER.info(
                 f"[ReportTask] finished task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
-                f"undo_tasks: {len(self.cur_task)}, try_count: {try_count}, now: {dt.local_now()}"
+                f"undo_tasks: {len(self.cur_task)}, try_count: {try_count}, now: {dt.local_now()}, total cost: {dt.now_ts() - task_start}s"
             )
             self._save_conf_to_local()
 
@@ -363,6 +367,26 @@ class ReportClient:
         m.update(s.encode("utf8"))
         sign = m.hexdigest().upper()
         params["sign"] = sign
+
+    def _register_executor(self, task_executor: TaskExecutor):
+        """注册执行器(优先级高于配置文件)"""
+        if task_executor is None:
+            return
+
+        report_type = task_executor.report_type
+        exc = task_executor.executor
+
+        if isinstance(exc, str):
+            mod_path, sep, callback_name = exc.rpartition(".")
+            mod = importlib.import_module(mod_path)
+            func = getattr(mod, callback_name)
+        elif callable(exc):
+            func = exc
+        else:
+            raise ValueError(f"executor is not callable: {exc}")
+
+        self.report_types[report_type] = func
+        _LOGGER.info(f"dynamic registry report task: {report_type} - {func.__module__}")
 
     @staticmethod
     def decorator(data_class):

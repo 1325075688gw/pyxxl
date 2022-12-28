@@ -25,6 +25,7 @@ setup(
         "confluent-kafka==1.7.0",
         "marshmallow==3.5.1",
         "pandas==1.4.2",
+        "xlsxwriter==3.0.3",
         "boto3==1.24.31",
         "bcrypt==4.0.1",
         "openpyxl==3.0.10",
