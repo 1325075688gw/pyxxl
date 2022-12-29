@@ -80,14 +80,15 @@ def require_vcode(func):
     return wrapper
 
 
-def check_user_vcode(request, user_id):
+def check_user_vcode(request, user_id, username: str = None):
     if not settings.DEBUG:
         vcode = request.META.get("HTTP_X_AUTH_VCODE")
         if not vcode:
             raise BizException(ERROR_VCODE_EMPTY)
 
         if getattr(settings, "SSO_VERIFY_VCODE_ENABLE", False):
-            if not sso_service.verify_vcode(request.user["name"], vcode):
+            username = username or request.user["name"]
+            if not sso_service.verify_vcode(username, vcode):
                 raise BizException(ERROR_VCODE_INCORRECT)
         elif not safe_client.verify_token(user_id, vcode, "127.0.0.1"):
             raise BizException(ERROR_VCODE_INCORRECT)

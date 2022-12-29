@@ -49,7 +49,7 @@ class LoginView(BaseView):
     @method_decorator(validate_parameters(LoginSchema))
     def post(self, request, cleaned_data):
         user = admin_service.login(**cleaned_data)
-        check_user_vcode(request, user["id"])
+        check_user_vcode(request, user["id"], username=user["name"])
         admin_service.update_user_login_count(user["id"])
         admin_service.update_user_last_login_time(user["id"])
         return wrapper_language_code(user)
