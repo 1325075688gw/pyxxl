@@ -370,11 +370,11 @@ class ReportClient:
 
     def _register_executor(self, task_executor: TaskExecutor):
         """注册执行器(优先级高于配置文件)"""
-        if task_executor is None:
-            return
-
         report_type = task_executor.report_type
         exc = task_executor.executor
+
+        if exc is None:
+            return
 
         if isinstance(exc, str):
             mod_path, sep, callback_name = exc.rpartition(".")
