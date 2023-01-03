@@ -1,7 +1,6 @@
 import json
 import logging
 from dataclasses import is_dataclass
-from datetime import datetime
 
 from django.conf import settings
 from django.http import JsonResponse, HttpResponse, QueryDict
@@ -68,7 +67,8 @@ class ApiMiddleware(MiddlewareMixin):
             response = dict(
                 status=exception.error_code.code,
                 msg=f"err code: {exception.error_code.code}",
-                timestamp=datetime.now(),
+                timestamp=timezone.now(),
+                extra=exception.extra,
             )
             return JsonResponse(response, encoder=JsonEncoder, status=400)
         else:

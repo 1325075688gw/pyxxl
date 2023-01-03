@@ -21,12 +21,17 @@ class BizErrorCode:
 
 class BizException(Exception):
     def __init__(
-        self, error_code: typing.Union[int, BizErrorCode], message: str = None, **kwargs
+        self,
+        error_code: typing.Union[int, BizErrorCode],
+        message: str = None,
+        extra=None,
+        **kwargs,
     ):
         if isinstance(error_code, int):
             error_code = BizErrorCode(error_code)
         self.error_code = error_code
         self.params = kwargs
+        self.extra = extra
         if message:
             self.error_code.message = message.format(**kwargs) if kwargs else message
         super().__init__(
