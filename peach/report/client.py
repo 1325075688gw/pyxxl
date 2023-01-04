@@ -54,6 +54,7 @@ ReportTaskInfo = namedtuple(
         "page_no",
         "page_size",
         "filter_params",
+        "executor",
     ],
 )
 
@@ -86,7 +87,7 @@ class ReportClient:
 
         self.export_file_dir = os.path.join(temp_file_dir, "file/")
         if not os.path.exists(self.export_file_dir):
-            os.makedirs(self.export_file_dir)
+            os.makedirs(self.export_file_dir, exist_ok=True)
 
         assert os.access(
             temp_file_dir, os.W_OK
@@ -108,12 +109,12 @@ class ReportClient:
         filter_params=None,
         executor=None,
     ):
-        self._register_executor(
-            TaskExecutor(report_type=report_type, executor=executor)
-        )
-
-        assert report_type in ReportClient.report_types
         assert isinstance(file_type, self.FileType)
+
+        if executor is None:
+            assert report_type in ReportClient.report_types
+        else:
+            assert isinstance(executor, str) and executor
         filter_params = filter_params or dict()
         file_name = self._gen_filename(file_type)
         params = dict(
@@ -125,6 +126,7 @@ class ReportClient:
             report_type=report_type,
             page_size=page_size,
             remark=remark,
+            executor=executor,
         )
         return self._rpc_upload_task(**params)
 
@@ -155,8 +157,17 @@ class ReportClient:
             try_count = 0
             success = False
             while try_count < MAX_RETRY_COUNT and not success:
+                task_start = dt.now_ts()
                 try:
                     report_task_info = self.cur_task[task_id]
+
+                    self._register_executor(
+                        TaskExecutor(
+                            report_type=report_task_info.report_type,
+                            executor=report_task_info.executor,
+                        )
+                    )
+
                     func = ReportClient.report_types[report_task_info.report_type]
                     task_id = report_task_info.id
 
@@ -178,7 +189,6 @@ class ReportClient:
                     filter_params["page_size"] = report_task_info.page_size
                     items_count = 0
 
-                    task_start = dt.now_ts()
                     _LOGGER.info(
                         f"[ReportTask] start task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
                         f"try_count: {try_count}, now: {dt.local_now()}"
@@ -223,7 +233,7 @@ class ReportClient:
                 self._rpc_update_task(task_id)
             del self.cur_task[task_id]
             _LOGGER.info(
-                f"[ReportTask] finished task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
+                f"[ReportTask] {'success' if success else 'failed'} export task: {task_id} - {report_task_info.report_type} - {report_task_info.file_name}, "
                 f"undo_tasks: {len(self.cur_task)}, try_count: {try_count}, now: {dt.local_now()}, total cost: {dt.now_ts() - task_start}s"
             )
             self._save_conf_to_local()
@@ -289,6 +299,7 @@ class ReportClient:
                 t["page_no"],
                 t["page_size"],
                 t["filter_conditions"],
+                t["executor"],
             )
 
         self._update_cur_task(res)
@@ -311,6 +322,7 @@ class ReportClient:
         page_size,
         remark,
         filter_params,
+        executor,
     ):
         url = "task/"
         params = dict(
@@ -322,6 +334,7 @@ class ReportClient:
             report_type=report_type,
             page_size=page_size,
             remark=remark,
+            executor=executor,
         )
         return self._do_post(self.server_host + url, params)
 
@@ -368,25 +381,30 @@ class ReportClient:
         sign = m.hexdigest().upper()
         params["sign"] = sign
 
-    def _register_executor(self, task_executor: TaskExecutor):
+    @staticmethod
+    def _register_executor(task_executor: TaskExecutor):
         """注册执行器(优先级高于配置文件)"""
         report_type = task_executor.report_type
         exc = task_executor.executor
 
-        if exc is None:
+        if not exc:
+            return
+
+        func = ReportClient.report_types.get(report_type)
+        if func and func == exc:
             return
 
         if isinstance(exc, str):
             mod_path, sep, callback_name = exc.rpartition(".")
             mod = importlib.import_module(mod_path)
             func = getattr(mod, callback_name)
-        elif callable(exc):
-            func = exc
         else:
-            raise ValueError(f"executor is not callable: {exc}")
+            raise ValueError(f"executor is not module path: {exc}")
 
-        self.report_types[report_type] = func
-        _LOGGER.info(f"dynamic registry report task: {report_type} - {func.__module__}")
+        ReportClient.report_types[report_type] = func
+        _LOGGER.info(
+            f"dynamic registry report task: {report_type} - {func.__module__}.{func.__name__}"
+        )
 
     @staticmethod
     def decorator(data_class):
