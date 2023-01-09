@@ -75,7 +75,7 @@ class ProcessorThread(Thread):
             "bootstrap.servers": bootstrap_servers,
             "group.id": group_id,
             "on_commit": self._on_committed,
-            "auto.offset.reset": "earliest",
+            "auto.offset.reset": "latest",
             "enable.auto.commit": False,
         }
         self._topics = (
