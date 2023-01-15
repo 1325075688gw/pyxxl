@@ -90,5 +90,6 @@ def check_user_vcode(request, user_id, username: str = None):
             username = username or request.user["name"]
             if not sso_service.verify_vcode(username, vcode):
                 raise BizException(ERROR_VCODE_INCORRECT)
-        elif not safe_client.verify_token(user_id, vcode, "127.0.0.1"):
-            raise BizException(ERROR_VCODE_INCORRECT)
+        elif getattr(settings, "SAFE_DOG_ENABLE", True):
+            if not safe_client.verify_token(user_id, vcode, "127.0.0.1"):
+                raise BizException(ERROR_VCODE_INCORRECT)
