@@ -19,3 +19,19 @@ def wrapper_record_info(record_items):
 def wrapper_language_code(user_info: dict):
     user_info["lang"] = settings.LANGUAGE_CODE
     return user_info
+
+
+def wrapper_include_fields(include_fields: list, data: list):
+    if not data or not include_fields:
+        return []
+
+    return [_filter_fields(include_fields, item) for item in data]
+
+
+def _filter_fields(include_fields: list, item: dict):
+    _item = dict()
+    for key in item.keys():
+        if key not in include_fields:
+            continue
+        _item[key] = item[key]
+    return _item

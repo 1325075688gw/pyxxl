@@ -19,6 +19,7 @@ from dacite import from_dict, Config
 from requests import RequestException
 
 from . import filelock
+from .const import SEPARATOR
 from .dtos import TaskListCriteria, TaskExecutor
 from .engines import Csv, Xlsx
 
@@ -55,6 +56,7 @@ ReportTaskInfo = namedtuple(
         "page_size",
         "filter_params",
         "executor",
+        "include_fields",
     ],
 )
 
@@ -108,6 +110,7 @@ class ReportClient:
         remark=None,
         filter_params=None,
         executor=None,
+        include_fields=None,
     ):
         assert isinstance(file_type, self.FileType)
 
@@ -127,6 +130,7 @@ class ReportClient:
             page_size=page_size,
             remark=remark,
             executor=executor,
+            include_fields=include_fields,
         )
         return self._rpc_upload_task(**params)
 
@@ -199,7 +203,11 @@ class ReportClient:
                         query_end = dt.now_ts()
 
                         save_start = dt.now_ts()
-                        engine.process_page(items, header=header)
+                        engine.process_page(
+                            items,
+                            header=header,
+                            include_fields=report_task_info.include_fields,
+                        )
                         save_end = dt.now_ts()
 
                         _LOGGER.info(
@@ -300,6 +308,7 @@ class ReportClient:
                 t["page_size"],
                 t["filter_conditions"],
                 t["executor"],
+                t["include_fields"],
             )
 
         self._update_cur_task(res)
@@ -323,6 +332,7 @@ class ReportClient:
         remark,
         filter_params,
         executor,
+        include_fields,
     ):
         url = "task/"
         params = dict(
@@ -335,6 +345,9 @@ class ReportClient:
             page_size=page_size,
             remark=remark,
             executor=executor,
+            include_fields=SEPARATOR.join(include_fields)
+            if isinstance(include_fields, list)
+            else include_fields,
         )
         return self._do_post(self.server_host + url, params)
 
@@ -406,8 +419,8 @@ class ReportClient:
             f"dynamic registry report task: {report_type} - {func.__module__}.{func.__name__}"
         )
 
-    @staticmethod
-    def decorator(data_class):
+    @classmethod
+    def decorator(cls, data_class):
         assert dataclasses.is_dataclass(data_class)
 
         def report_decorator(func):

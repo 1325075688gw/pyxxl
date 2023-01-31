@@ -3,6 +3,7 @@ import logging
 
 from django.apps import AppConfig
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 from .api import report_client
 
@@ -23,6 +24,8 @@ class ReportConfig(AppConfig):
             ReportType.ADMIN_RECORD.value: 'peach.admin.services.admin_service.export_record',
         }
         """
+        if report_client is None:
+            raise ImproperlyConfigured("The REPORT_CONG settings must not be empty.")
 
         if hasattr(settings, "REPORT_TASK") and settings.REPORT_TASK:
             for report_type, func_path in settings.REPORT_TASK.items():
