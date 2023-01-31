@@ -213,7 +213,7 @@ def get_user_by_token(token, update=False):
         valid_created_at = dt.local_now() - timedelta(hours=6)
     token = Token.objects.filter(
         token=token,
-        created_at__gt=valid_created_at,
+        updated_at__gt=valid_created_at,
         user__enable=True,
     ).first()
     if not token:
