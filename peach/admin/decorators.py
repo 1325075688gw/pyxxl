@@ -10,10 +10,12 @@ from .exceptions import (
     ERROR_VCODE_EMPTY,
     ERROR_VCODE_INCORRECT,
 )
+from .helper import wrapper_include_fields
 from .services import admin_service, sso_service
 from .safe_dog import safe_client
 from . import auth
 from peach.misc.exceptions import BizException
+from peach.django.views import PaginationResponse
 
 
 def require_login(func):
@@ -41,12 +43,53 @@ def require_login(func):
     return wrapper
 
 
-def check_permission(permission_code):
+def check_permission(permission_code, check_include_fields=False):
+    """
+    权限校验装饰器
+    :param permission_code: 权限code
+    :param check_include_fields: 是否校验过滤返回结果中的字段是否在权限中
+    :return:
+    """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             request = args[0]
             auth.check_permission(permission_code, request)
-            return func(*args, **kwargs)
+
+            request.include_fields = None
+            if check_include_fields:
+                request.include_fields = list(
+                    admin_service.get_user_permission_include_fields(
+                        request.user_id, permission_code
+                    )
+                )
+
+            response = func(*args, **kwargs)
+
+            if check_include_fields:
+                # 响应过滤处理
+                # 目前只针对 response 为 dict(total=0,items=[]) 和 PaginationResponse(total=0,items=[]) 类型的数据进行过滤
+                if isinstance(response, PaginationResponse):
+                    items = wrapper_include_fields(
+                        request.include_fields, response.items
+                    )
+                    response = PaginationResponse(
+                        items=items, total=response.total if items else 0
+                    )
+                elif isinstance(response, dict) and isinstance(
+                    response.get("items"), list
+                ):
+                    items = wrapper_include_fields(
+                        request.include_fields, response["items"]
+                    )
+                    response = dict(
+                        items=items,
+                        total=response["total"]
+                        if items and response.get("total")
+                        else 0,
+                    )
+
+            return response
 
         return wrapper
 
