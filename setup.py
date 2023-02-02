@@ -6,6 +6,8 @@ setup(
     description="python tools",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
+        "aiohttp==3.8.3",
+        "fastapi==0.89.1",
         "user_agents==1.1.0",
         "pyyaml==6.0.0",
         "tomli==2.0.1",
