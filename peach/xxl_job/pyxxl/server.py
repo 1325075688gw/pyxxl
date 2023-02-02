@@ -45,6 +45,7 @@ async def run(request: web.Request) -> web.Response:
         "broadcastTotal":0                          // 分片参数：总分片
     }
     """
+    print("sss")
     data = await request.json()
     run_data = RunData(**data)
     logger.debug("Get task request. jobId=%s logId=%s [%s]" % (run_data.jobId, run_data.logId, run_data))

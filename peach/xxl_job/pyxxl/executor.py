@@ -1,7 +1,9 @@
 import asyncio
 import functools
+import json
 import logging
 import time
+import dataclasses
 
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -26,10 +28,12 @@ class JobHandler:
     _handlers: Dict[str, HandlerInfo] = {}
 
     def dynamic_register(self, job_info):
-        return requests.post(url=ExecutorConfig.get_xxl_admin_baseurl() + "jobinfo/add_by_dynamic/", data=job_info)
+        job_info = dataclasses.asdict(job_info)
+        res = requests.post(url=ExecutorConfig.get_xxl_admin_baseurl() + "jobinfo/add_by_dynamic/", data=job_info)
+        return json.loads(res.text)
 
     def register(
-        self, *args: Any, name: Optional[str] = None, replace: bool = False
+            self, *args: Any, name: Optional[str] = None, replace: bool = False
     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
         """将函数注册到可执行的job中,如果其他地方要调用该方法,replace修改为True"""
 
@@ -60,12 +64,12 @@ class JobHandler:
 
 class Executor:
     def __init__(
-        self,
-        xxl_client: XXL,
-        config: ExecutorConfig,
-        *,
-        handler: Optional[JobHandler] = None,
-        loop: Optional[asyncio.AbstractEventLoop] = None,
+            self,
+            xxl_client: XXL,
+            config: ExecutorConfig,
+            *,
+            handler: Optional[JobHandler] = None,
+            loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         """执行器，真正的调度任务和策略都在这里
 

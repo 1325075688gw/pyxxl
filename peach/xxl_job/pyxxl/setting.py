@@ -8,7 +8,7 @@ from typing import Optional
 from yarl import URL
 
 from peach.xxl_job.pyxxl.utils import get_network_ip
-from peach.xxl_job.pyxxl.config import *
+from peach.xxl_job.pyxxl.config import yaml_config
 
 logger = logging.getLogger(__name__)
 
@@ -26,14 +26,13 @@ class ExecutorConfig:
 
     """
 
-    executor_app_name: str
+    executor_app_name: str = ""
     """xxl-admin上定义的执行器名称,必须一致否则无法注册(如xxl-job-executor-sample). 必填"""
-
 
     xxl_admin_baseurl: str = ""
     """xxl-admin服务端暴露的restful接口url(如http://localhost:8080/xxl-job-admin/api/). 必填"""
 
-    yaml_config: dict = None
+    # yaml_config: dict = None
 
     access_token: Optional[str] = None
     """调度器的token. Default: None"""
@@ -59,8 +58,7 @@ class ExecutorConfig:
 
     @classmethod
     def set_xxl_admin_baseurl(cls):
-        read_and_parse_yaml()
-        cls.xxl_admin_baseurl = ExecutorConfig.yaml_config["xxl_admin_baseurl"]
+        cls.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
 
     @classmethod
     def get_xxl_admin_baseurl(cls):
@@ -82,8 +80,9 @@ class ExecutorConfig:
                 logger.debug("Get [%s] config from env: [%s]" % (param.name, env_val))
                 setattr(self, param.name, env_val)
 
-        read_and_parse_yaml()
-        self.xxl_admin_baseurl = ExecutorConfig.yaml_config["xxl_admin_baseurl"]
+        self.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
+        self.executor_app_name = yaml_config["appname"]
+        self.executor_port = yaml_config["executor_port"]
         self._valid_xxl_admin_baseurl()
         self._valid_executor_app_name()
 
@@ -101,4 +100,5 @@ class ExecutorConfig:
 
     @property
     def executor_baseurl(self) -> str:
+        res = get_network_ip()
         return "http://{host}:{port}".format(host=self.executor_host, port=self.executor_port)

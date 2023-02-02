@@ -9,6 +9,8 @@ from peach.xxl_job.pyxxl.ctx import g
 def get_network_ip() -> str:
     """获取本机地址,会获取首个网络地址"""
     _, _, ipaddrlist = socket.gethostbyname_ex(socket.gethostname())
+    if ipaddrlist[0] == "127.0.0.1" or ipaddrlist[0] == "localhost":
+        return ipaddrlist[1]
     return ipaddrlist[0]
 
 
