@@ -100,6 +100,10 @@ class PyxxlRunner:
             handle_signals=handle_signals,
         )
 
+    def exit_executor(self, handle_signals: bool = True) -> None:
+        """关闭executor"""
+        self._cleanup_ctx()
+
     def _runner(self) -> None:
         self.run_executor(handle_signals=True)
 
