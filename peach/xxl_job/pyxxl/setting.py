@@ -56,15 +56,15 @@ class ExecutorConfig:
     dotenv_path: Optional[str] = None
     """.env文件的路径,默认为当前路径下的.env文件."""
 
-    @classmethod
-    def set_xxl_admin_baseurl(cls):
-        cls.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
-
-    @classmethod
-    def get_xxl_admin_baseurl(cls):
-        if not cls.xxl_admin_baseurl:
-            cls.set_xxl_admin_baseurl()
-        return cls.xxl_admin_baseurl
+    # @classmethod
+    # def set_xxl_admin_baseurl(cls):
+    #     cls.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
+    #
+    # @classmethod
+    # def get_xxl_admin_baseurl(cls):
+    #     if not cls.xxl_admin_baseurl:
+    #         cls.set_xxl_admin_baseurl()
+    #     return cls.xxl_admin_baseurl
 
     def __post_init__(self) -> None:
         try:
@@ -77,7 +77,9 @@ class ExecutorConfig:
         for param in inspect.signature(ExecutorConfig).parameters.values():
             env_val = os.getenv(param.name) or os.getenv(param.name.upper())
             if env_val is not None:
-                logger.debug("Get [%s] config from env: [%s]" % (param.name, env_val))
+                logger.debug(
+                    "Get [{}] config from env: [{}]".format(param.name, env_val)
+                )
                 setattr(self, param.name, env_val)
 
         self.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
@@ -92,7 +94,9 @@ class ExecutorConfig:
 
         _admin_url: URL = URL(self.xxl_admin_baseurl)
         if not (_admin_url.scheme.startswith("http") and _admin_url.path.endswith("/")):
-            raise ValueError("admin_url must like http://localhost:8080/xxl-job-admin/api/")
+            raise ValueError(
+                "admin_url must like http://localhost:8080/xxl-job-admin/api/"
+            )
 
     def _valid_executor_app_name(self) -> None:
         if not self.executor_app_name:
@@ -100,5 +104,6 @@ class ExecutorConfig:
 
     @property
     def executor_baseurl(self) -> str:
-        res = get_network_ip()
-        return "http://{host}:{port}".format(host=self.executor_host, port=self.executor_port)
+        return "http://{host}:{port}".format(
+            host=self.executor_host, port=self.executor_port
+        )

@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class PyxxlRunner:
+    app: web.Application = None
     xxl_client: Optional[XXL] = None
     executor: Optional[Executor] = None
     register_task: Optional[asyncio.Task] = None
@@ -52,17 +53,25 @@ class PyxxlRunner:
         # todo: 这是个调度器的bug，必须循环去注册，不然会显示为离线
         # https://github.com/xuxueli/xxl-job/issues/2090
         while True:
-            await xxl_client.registry(self.config.executor_app_name, self.config.executor_baseurl)
+            await xxl_client.registry(
+                self.config.executor_app_name, self.config.executor_baseurl
+            )
             await asyncio.sleep(10)
 
     def _get_xxl_clint(self) -> XXL:
         """for moke"""
-        return XXL(self.config.xxl_admin_baseurl + "api/", token=self.config.access_token)
+        return XXL(
+            self.config.xxl_admin_baseurl + "api/", token=self.config.access_token
+        )
 
     async def _init(self) -> None:
         self.xxl_client = self._get_xxl_clint()
-        self.executor = Executor(self.xxl_client, config=self.config, handler=self.handler)
-        self.register_task = asyncio.create_task(self._register_task(self.xxl_client), name="pyxxl-register")
+        self.executor = Executor(
+            self.xxl_client, config=self.config, handler=self.handler
+        )
+        self.register_task = asyncio.create_task(
+            self._register_task(self.xxl_client), name="pyxxl-register"
+        )
 
     async def _cleanup_ctx(self, app: web.Application) -> AsyncGenerator:
         await self._init()
@@ -70,14 +79,18 @@ class PyxxlRunner:
         app["executor"] = self.executor
         app["register_task"] = self.register_task
         if self.executor and self.executor.handler:
-            logger.info("register with handlers %s", list(self.executor.handler.handlers_info()))
+            logger.info(
+                "register with handlers %s", list(self.executor.handler.handlers_info())
+            )
         else:
             logger.warning("register with handlers is empty")
 
         yield
 
         app["register_task"].cancel()
-        await app["xxl_client"].registryRemove(self.config.executor_app_name, self.config.executor_baseurl)
+        await app["xxl_client"].registryRemove(
+            self.config.executor_app_name, self.config.executor_baseurl
+        )
         if self.config.graceful_close:
             await app["executor"].graceful_close(self.config.graceful_timeout)
         else:
@@ -93,8 +106,9 @@ class PyxxlRunner:
 
     def run_executor(self, handle_signals: bool = True) -> None:
         """用aiohttp的web服务器启动执行器"""
+        self.app = self.create_server_app()
         web.run_app(
-            self.create_server_app(),
+            self.app,
             port=self.config.executor_port,
             host=self.config.executor_host,
             handle_signals=handle_signals,
@@ -102,7 +116,7 @@ class PyxxlRunner:
 
     def exit_executor(self, handle_signals: bool = True) -> None:
         """关闭executor"""
-        self._cleanup_ctx()
+        self._cleanup_ctx(self.app)
 
     def _runner(self) -> None:
         self.run_executor(handle_signals=True)

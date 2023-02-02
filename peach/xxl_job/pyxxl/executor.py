@@ -9,17 +9,15 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional
 
-import aiohttp
 import requests
 
 from peach.xxl_job.pyxxl import error
 from peach.xxl_job.pyxxl.ctx import g
 from peach.xxl_job.pyxxl.enum import executorBlockStrategy
-from peach.xxl_job.pyxxl.error import XXLRegisterError, ClientError
 from peach.xxl_job.pyxxl.schema import HandlerInfo, RunData
 from peach.xxl_job.pyxxl.setting import ExecutorConfig
 from peach.xxl_job.pyxxl.types import DecoratedCallable
-from peach.xxl_job.pyxxl.xxl_client import XXL, JsonType, Response
+from peach.xxl_job.pyxxl.xxl_client import XXL
 
 logger = logging.getLogger(__name__)
 
@@ -29,20 +27,29 @@ class JobHandler:
 
     def dynamic_register(self, job_info):
         job_info = dataclasses.asdict(job_info)
-        res = requests.post(url=ExecutorConfig.get_xxl_admin_baseurl() + "jobinfo/add_by_dynamic/", data=job_info)
+        res = requests.post(
+            url=ExecutorConfig.xxl_admin_baseurl + "jobinfo/add_by_dynamic/",
+            data=job_info,
+        )
         return json.loads(res.text)
 
     def register(
-            self, *args: Any, name: Optional[str] = None, replace: bool = False
+        self, *args: Any, name: Optional[str] = None, replace: bool = False
     ) -> Callable[[DecoratedCallable], DecoratedCallable]:
         """将函数注册到可执行的job中,如果其他地方要调用该方法,replace修改为True"""
 
         def func_wrapper(func: DecoratedCallable) -> DecoratedCallable:
             handler_name = name or func.__name__
             if handler_name in self._handlers and replace is False:
-                raise error.JobRegisterError("handler %s already registered." % handler_name)
+                raise error.JobRegisterError(
+                    "handler %s already registered." % handler_name
+                )
             self._handlers[handler_name] = HandlerInfo(handler=func)
-            logger.debug("register job %s,is async: %s" % (handler_name, asyncio.iscoroutinefunction(func)))
+            logger.debug(
+                "register job {},is async: {}".format(
+                    handler_name, asyncio.iscoroutinefunction(func)
+                )
+            )
 
             @functools.wraps(func)
             def inner_wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -59,17 +66,19 @@ class JobHandler:
         return self._handlers.get(name, None)
 
     def handlers_info(self) -> List[str]:
-        return ["<%s is_async:%s>" % (k, v.is_async) for k, v in self._handlers.items()]
+        return [
+            "<{} is_async:{}>".format(k, v.is_async) for k, v in self._handlers.items()
+        ]
 
 
 class Executor:
     def __init__(
-            self,
-            xxl_client: XXL,
-            config: ExecutorConfig,
-            *,
-            handler: Optional[JobHandler] = None,
-            loop: Optional[asyncio.AbstractEventLoop] = None,
+        self,
+        xxl_client: XXL,
+        config: ExecutorConfig,
+        *,
+        handler: Optional[JobHandler] = None,
+        loop: Optional[asyncio.AbstractEventLoop] = None,
     ) -> None:
         """执行器，真正的调度任务和策略都在这里
 
@@ -101,7 +110,9 @@ class Executor:
         handler_obj = self.handler.get(run_data.executorHandler)
         if not handler_obj:
             logger.warning("handler %s not found." % run_data.executorHandler)
-            raise error.JobNotFoundError("handler %s not found." % run_data.executorHandler)
+            raise error.JobNotFoundError(
+                "handler %s not found." % run_data.executorHandler
+            )
 
         # 一个执行器同时只能执行一个jobId相同的任务
         async with self.lock:
@@ -109,14 +120,28 @@ class Executor:
             if current_task:
                 # 不用的阻塞策略
                 # pylint: disable=no-else-raise
-                if run_data.executorBlockStrategy == executorBlockStrategy.DISCARD_LATER.value:
+                if (
+                    run_data.executorBlockStrategy
+                    == executorBlockStrategy.DISCARD_LATER.value
+                ):
                     raise error.JobDuplicateError(
-                        "The same job [%s] is already executing and this has been discarded." % run_data.jobId
+                        "The same job [%s] is already executing and this has been discarded."
+                        % run_data.jobId
                     )
-                elif run_data.executorBlockStrategy == executorBlockStrategy.COVER_EARLY.value:
-                    logger.warning("job %s is  COVER_EARLY, logId %s replaced." % (run_data.jobId, run_data.logId))
+                elif (
+                    run_data.executorBlockStrategy
+                    == executorBlockStrategy.COVER_EARLY.value
+                ):
+                    logger.warning(
+                        "job {} is  COVER_EARLY, logId {} replaced.".format(
+                            run_data.jobId, run_data.logId
+                        )
+                    )
                     await self._cancel(run_data.jobId)
-                elif run_data.executorBlockStrategy == executorBlockStrategy.SERIAL_EXECUTION.value:
+                elif (
+                    run_data.executorBlockStrategy
+                    == executorBlockStrategy.SERIAL_EXECUTION.value
+                ):
 
                     if len(self.queue[run_data.jobId]) >= self.config.task_queue_length:
                         msg = (
@@ -143,7 +168,8 @@ class Executor:
                         return
                 else:
                     raise error.JobParamsError(
-                        "unknown executorBlockStrategy [%s]." % run_data.executorBlockStrategy,
+                        "unknown executorBlockStrategy [%s]."
+                        % run_data.executorBlockStrategy,
                         executorBlockStrategy=run_data.executorBlockStrategy,
                     )
 
@@ -161,7 +187,9 @@ class Executor:
     async def _run(self, handler: HandlerInfo, start_time: int, data: RunData) -> None:
         try:
             g.set_xxl_run_data(data)
-            logger.info("Start job jobId=%s logId=%s [%s]" % (data.jobId, data.logId, data))
+            logger.info(
+                "Start job jobId={} logId={} [{}]".format(data.jobId, data.logId, data)
+            )
             func = (
                 handler.handler()
                 if handler.is_async
@@ -170,15 +198,21 @@ class Executor:
                     handler.handler,
                 )
             )
-            result = await asyncio.wait_for(func, data.executorTimeout or self.config.task_timeout)
-            logger.info("Job finished jobId=%s logId=%s" % (data.jobId, data.logId))
+            result = await asyncio.wait_for(
+                func, data.executorTimeout or self.config.task_timeout
+            )
+            logger.info("Job finished jobId={} logId={}".format(data.jobId, data.logId))
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:
             logger.warning(e, exc_info=True)
-            await self.xxl_client.callback(data.logId, start_time, code=500, msg="CancelledError")
+            await self.xxl_client.callback(
+                data.logId, start_time, code=500, msg="CancelledError"
+            )
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)
-            await self.xxl_client.callback(data.logId, start_time, code=500, msg=str(err))
+            await self.xxl_client.callback(
+                data.logId, start_time, code=500, msg=str(err)
+            )
         finally:
             await self._finish(data.jobId)
 
@@ -188,7 +222,11 @@ class Executor:
         queue = self.queue[job_id]
         if queue:
             kwargs: RunData = queue.pop(0)
-            logger.info("JobId %s in queue[%s], start job with logId %s" % (kwargs.jobId, len(queue), kwargs.logId))
+            logger.info(
+                "JobId {} in queue[{}], start job with logId {}".format(
+                    kwargs.jobId, len(queue), kwargs.logId
+                )
+            )
             await self.run_job(kwargs)
 
     async def _cancel(self, job_id: int) -> None:

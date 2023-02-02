@@ -1,13 +1,10 @@
-import asyncio
-import json
 import logging
-import time
+
 
 from peach.xxl_job.pyxxl import ExecutorConfig, PyxxlRunner
-from peach.xxl_job.pyxxl.ctx import g
+
 from peach.xxl_job.pyxxl.utils import setup_logging
-from peach.xxl_job.pyxxl.job_info import JobInfo
-import dataclasses
+
 
 setup_logging(logging.DEBUG)
 
@@ -19,4 +16,4 @@ config = ExecutorConfig(
 
 app = PyxxlRunner(config)
 
-# app.run_executor()
+app.run_executor()
