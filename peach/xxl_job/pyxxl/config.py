@@ -15,5 +15,11 @@ class YamlConfig:
         return config
 
 
-YamlConfig.yaml_config = YamlConfig.read_and_parse_yaml()
-yaml_config = YamlConfig.yaml_config
+# YamlConfig.yaml_config = YamlConfig.read_and_parse_yaml()
+# yaml_config = YamlConfig.yaml_config
+yaml_config = {}
+
+
+def set_xxl_job_yaml_config(xxl_job_yaml_config):
+    global yaml_config
+    yaml_config = xxl_job_yaml_config
