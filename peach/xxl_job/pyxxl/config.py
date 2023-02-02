@@ -12,9 +12,7 @@ class YamlConfig:
     def read_and_parse_yaml(cls):
         if cls.yaml_config:
             return cls.yaml_config
-        _env_file = open(
-            os.path.join("/Users/gongwei/PycharmProjects/peach/peach.yaml"), "r"
-        )
+        _env_file = open(os.path.join(os.getcwd(), "env.yaml"), "r")
         config = yaml.load(_env_file, Loader)
         return config
 
