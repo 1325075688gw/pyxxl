@@ -25,11 +25,12 @@ logger = logging.getLogger(__name__)
 class JobHandler:
     _handlers: Dict[str, HandlerInfo] = {}
 
-    def dynamic_register(self, job_info):
+    def dynamic_register(self, job_info, cookies):
         job_info = dataclasses.asdict(job_info)
         res = requests.post(
-            url=ExecutorConfig.xxl_admin_baseurl + "jobinfo/add_by_dynamic/",
+            url=ExecutorConfig().xxl_admin_baseurl + "jobinfo/add_by_dynamic/",
             data=job_info,
+            cookies=cookies,
         )
         return json.loads(res.text)
 

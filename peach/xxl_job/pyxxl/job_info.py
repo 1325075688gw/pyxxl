@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from peach.xxl_job.pyxxl.config import yaml_config
 
 
 @dataclass
@@ -7,9 +6,10 @@ class JobInfo:
     jobDesc: str
     author: str
     alarmEmail: str
-    scheduleConf: str
     executorHandler: str
     executorParam: str
+    scheduleConf: str = "0 15 10 * * ? 2005"
+    triggerNextTime: int = 0
     scheduleType: str = "CRON"
     appname: str = ""
     cronGen_display: str = ""
@@ -27,8 +27,10 @@ class JobInfo:
     glueSource: str = ""
 
     def __post_init__(self):
+        from peach.xxl_job.pyxxl.config import yaml_config
+
         self.cronGen_display = self.scheduleConf
-        self.appname = yaml_config["appname"]
+        self.appname = yaml_config["xxl_job"]["appname"]
 
     # def __init__(self):
 
@@ -37,4 +39,3 @@ class JobInfo:
 # job_info = JobInfo(jobDesc="复读是风沙大发", author="sss", alarmEmail="fff", scheduleConf="0 0 0 * * ? *", executorHandler="dd", executorParam="fsd")
 
 # app.handler.dynamic_register(job_info)
-
