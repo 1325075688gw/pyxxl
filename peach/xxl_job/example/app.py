@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 
@@ -37,28 +36,29 @@ def _test_task4():
     time.sleep(3)
     return "成功3"
 
+
 job_info = {
-    'appname':'xxl-job-python-executor-sample',
-    'jobDesc':'粉sss孙菲菲身份',
-    'author':'龚伟2233333222a',
-    'alarmEmail':'1325075688@qq.com',
-    'scheduleType':'CRON',
-    'scheduleConf':'1-2 * 3,4,18,23 * * ?',
-    'cronGen_display':'1-2 * * * * ?',
-    'schedule_conf_CRON':'',
-    'schedule_conf_FIX_RATE':'',
-    'schedule_conf_FIX_DELAY':'',
-    'glueType':'BEAN',
-    'executorHandler':'demoJobHandler',
-    'executorParam':'123',
-    'executorRouteStrategy':'FIRST',
-    'childJobId':'',
-    'misfireStrategy':'DO_NOTHING',
-    'executorBlockStrategy':'SERIAL_EXECUTION',
-    'executorTimeout':0,
-    'executorFailRetryCount':0,
-    'glueRemark':'GLUE代码初始化',
-    'glueSource':''
+    "appname": "xxl-job-python-executor-sample",
+    "jobDesc": "粉sss孙菲菲身份",
+    "author": "龚伟2233333222a",
+    "alarmEmail": "1325075688@qq.com",
+    "scheduleType": "CRON",
+    "scheduleConf": "1-2 * 3,4,18,23 * * ?",
+    "cronGen_display": "1-2 * * * * ?",
+    "schedule_conf_CRON": "",
+    "schedule_conf_FIX_RATE": "",
+    "schedule_conf_FIX_DELAY": "",
+    "glueType": "BEAN",
+    "executorHandler": "demoJobHandler",
+    "executorParam": "123",
+    "executorRouteStrategy": "FIRST",
+    "childJobId": "",
+    "misfireStrategy": "DO_NOTHING",
+    "executorBlockStrategy": "SERIAL_EXECUTION",
+    "executorTimeout": 0,
+    "executorFailRetryCount": 0,
+    "glueRemark": "GLUE代码初始化",
+    "glueSource": "",
 }
 
 # app.handler.dynamic_register(job_info)
