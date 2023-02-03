@@ -48,7 +48,11 @@ async def run(request: web.Request) -> web.Response:
     print("sss")
     data = await request.json()
     run_data = RunData(**data)
-    logger.debug("Get task request. jobId=%s logId=%s [%s]" % (run_data.jobId, run_data.logId, run_data))
+    logger.debug(
+        "Get task request. jobId={} logId={} [{}]".format(
+            run_data.jobId, run_data.logId, run_data
+        )
+    )
     try:
         await request.app["executor"].run_job(run_data)
     except error.JobDuplicateError as e:
@@ -81,7 +85,12 @@ async def log(request: web.Request) -> web.Response:
     response = {
         "code": 200,
         "msg": None,
-        "content": {"fromLineNum": 1, "toLineNum": 1, "logContent": "xxx", "isEnd": True},
+        "content": {
+            "fromLineNum": 1,
+            "toLineNum": 1,
+            "logContent": "xxx",
+            "isEnd": True,
+        },
     }
 
     return web.json_response(response)

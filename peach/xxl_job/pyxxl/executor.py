@@ -8,6 +8,7 @@ import dataclasses
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional
+from json import JSONDecodeError
 
 import requests
 
@@ -25,7 +26,9 @@ logger = logging.getLogger(__name__)
 class JobHandler:
     _handlers: Dict[str, HandlerInfo] = {}
 
-    def dynamic_register(self, job_info, cookies):
+    @classmethod
+    def dynamic_register(cls, job_info):
+        cookies = {"REMOTE_COOKIE": ExecutorConfig.remote_cookie}
         job_info = dataclasses.asdict(job_info)
         res = requests.post(
             url=ExecutorConfig().xxl_admin_baseurl + "jobinfo/add_by_dynamic/",
@@ -46,7 +49,7 @@ class JobHandler:
                     "handler %s already registered." % handler_name
                 )
             self._handlers[handler_name] = HandlerInfo(handler=func)
-            logger.debug(
+            logger.info(
                 "register job {},is async: {}".format(
                     handler_name, asyncio.iscoroutinefunction(func)
                 )
@@ -187,6 +190,11 @@ class Executor:
 
     async def _run(self, handler: HandlerInfo, start_time: int, data: RunData) -> None:
         try:
+            if data.executorParams:
+                data.executorParams = json.loads(data.executorParams)
+                if type(data.executorParams) == str:
+                    data.executorParams = json.loads(data.executorParams)
+
             g.set_xxl_run_data(data)
             logger.info(
                 "Start job jobId={} logId={} [{}]".format(data.jobId, data.logId, data)
@@ -208,6 +216,11 @@ class Executor:
             logger.warning(e, exc_info=True)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="CancelledError"
+            )
+        except JSONDecodeError as e:
+            logger.exception(e)
+            await self.xxl_client.callback(
+                data.logId, start_time, code=500, msg="参数格式错误，期望json字符串"
             )
         except Exception as err:  # pylint: disable=broad-except
             logger.exception(err)

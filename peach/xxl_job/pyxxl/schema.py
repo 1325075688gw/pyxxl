@@ -1,3 +1,4 @@
+import typing
 from asyncio import iscoroutinefunction
 from dataclasses import dataclass
 from typing import Callable, Optional
@@ -12,7 +13,7 @@ class HandlerInfo:
         return iscoroutinefunction(self.handler)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class RunData:
     """
     调度器传入的所有参数，执行函数通过g来获取这些参数
@@ -35,7 +36,7 @@ class RunData:
     executorHandler: str
     executorBlockStrategy: str
 
-    executorParams: Optional[str] = None
+    executorParams: Optional[typing.Any] = None
     executorTimeout: Optional[int] = None
     logDateTime: Optional[int] = None
     glueType: Optional[str] = None

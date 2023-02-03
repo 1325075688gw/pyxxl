@@ -36,6 +36,8 @@ class ExecutorConfig:
     access_token: Optional[str] = None
     """调度器的token. Default: None"""
 
+    remote_cookie: str = "e10adc3949ba59abbe56e057f20f883e"
+
     executor_host: str = field(default_factory=get_network_ip)
     """执行器绑定的host,xxl-admin通过这个host来回调pyxxl执行器,如果不填会默认取第一个网卡的地址. Default: 获取到第一个网卡的ip地址"""
     executor_port: int = 9999
