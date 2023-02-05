@@ -208,7 +208,7 @@ class Executor:
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
-
+            g.delete_xxl_run_data(data.traceID)
             logger.info("Job finished jobId={} logId={}".format(data.jobId, data.logId))
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:
