@@ -24,6 +24,11 @@ def cache(key: typing.Union[str, typing.Callable], ex: int = 0):
         args 是传入func的参数
 
     示例：
+    @cache(key="all_act_confs")
+    def get_all_confs() -> List[ActConfDTO]:
+        all_confs = DActConf.objects.all()
+        return [d_act_conf_2_dto(_conf) for c in all_confs]
+
     @cache(key=lambda args: "act_conf:{}".format(args[0]))
     def get_conf_by_id(act_id: str) -> ActConfDTO:
         _conf = DActConf.objects(id=act_id).first()
@@ -32,7 +37,7 @@ def cache(key: typing.Union[str, typing.Callable], ex: int = 0):
         return d_act_conf_2_dto(_conf)
 
     @cache(key=lambda args: "act_conf:{}".format(args[0]))
-    def del_conf_by_id(act_id: str) -> ActConfDTO:
+    def del_conf_by_id(act_id: str) -> bool:
        return DActConf.objects(id=act_id).delete()
     """
     def decorator(func):
