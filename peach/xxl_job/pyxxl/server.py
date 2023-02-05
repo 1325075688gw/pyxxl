@@ -4,6 +4,7 @@ from aiohttp import web
 
 from peach.xxl_job.pyxxl import error
 from peach.xxl_job.pyxxl.schema import RunData
+import uuid
 
 
 logger = logging.getLogger(__name__)
@@ -45,8 +46,8 @@ async def run(request: web.Request) -> web.Response:
         "broadcastTotal":0                          // 分片参数：总分片
     }
     """
-    print("sss")
     data = await request.json()
+    data["traceID"] = str(uuid.uuid4())
     run_data = RunData(**data)
     logger.debug(
         "Get task request. jobId={} logId={} [{}]".format(

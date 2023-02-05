@@ -194,22 +194,21 @@ class Executor:
                 data.executorParams = json.loads(data.executorParams)
                 if type(data.executorParams) == str:
                     data.executorParams = json.loads(data.executorParams)
-
             g.set_xxl_run_data(data)
             logger.info(
                 "Start job jobId={} logId={} [{}]".format(data.jobId, data.logId, data)
             )
             func = (
-                handler.handler()
+                handler.handler(data.traceID)
                 if handler.is_async
                 else self.loop.run_in_executor(
-                    self.thread_pool,
-                    handler.handler,
+                    self.thread_pool, handler.handler, data.traceID
                 )
             )
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
+
             logger.info("Job finished jobId={} logId={}".format(data.jobId, data.logId))
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:

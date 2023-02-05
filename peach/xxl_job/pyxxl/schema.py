@@ -35,6 +35,7 @@ class RunData:
     logId: int
     executorHandler: str
     executorBlockStrategy: str
+    traceID: str
 
     executorParams: Optional[typing.Any] = None
     executorTimeout: Optional[int] = None
