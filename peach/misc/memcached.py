@@ -1,5 +1,6 @@
 import logging
 import typing
+from functools import wraps
 
 from django.conf import settings
 from pymemcache.client.hash import HashClient
@@ -13,6 +14,60 @@ memcached_client = HashClient(
 )
 
 _enable = settings.MEMCACHED_ENABLE
+
+
+def cache(key: typing.Union[str, typing.Callable], ex: int = 0):
+    """
+    key = "online_raffle_confs"
+    or
+    key = lambda args: "online_raffle_conf:{}".format(args[0])
+        args 是传入func的参数
+
+    示例：
+    @cache(key=lambda args: "act_conf:{}".format(args[0]))
+    def get_conf_by_id(act_id: str) -> ActConfDTO:
+        _conf = DActConf.objects(id=act_id).first()
+        if not _conf:
+            raise BizException(err.ERROR_ACT_CONF_NOT_EXIST)
+        return d_act_conf_2_dto(_conf)
+
+    @cache(key=lambda args: "act_conf:{}".format(args[0]))
+    def del_conf_by_id(act_id: str) -> ActConfDTO:
+       return DActConf.objects(id=act_id).delete()
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+
+            if not _enable:
+                return func(*args, **kwargs)
+
+            cache_key = key if isinstance(key, str) else key(args)
+            value, err = _get(cache_key)
+            if value is not None:
+                return value
+
+            value = func(*args, **kwargs)
+            if value is not None:
+                _set(cache_key, value, ex)
+            return value
+
+        return wrapper
+    return decorator
+
+
+def del_cache(key: typing.Union[str, typing.Callable], del_func: typing.Callable):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+
+            cache_key = key if isinstance(key, str) else key(args)
+            del_func(cache_key)
+            return result
+
+        return wrapper
+    return decorator
 
 
 def get(
