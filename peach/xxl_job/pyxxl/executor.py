@@ -44,6 +44,8 @@ class JobHandler:
 
         def func_wrapper(func: DecoratedCallable) -> DecoratedCallable:
             handler_name = name or func.__name__
+            if type(handler_name) != str:
+                handler_name = handler_name.value
             if handler_name in self._handlers and replace is False:
                 raise error.JobRegisterError(
                     "handler %s already registered." % handler_name
