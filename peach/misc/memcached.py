@@ -16,6 +16,36 @@ memcached_client = HashClient(
 _enable = settings.MEMCACHED_ENABLE
 
 
+def get(
+    key: str, fetch_func: typing.Callable[[], typing.Any] = None, expire_sec: int = 0
+):
+    """
+    get cached value by key and return it if it exists, otherwise,
+    get the value by 'fetch_func' and set it into the cache.
+    """
+    if not _enable:
+        return fetch_func()
+
+    value, err = _get(key)
+    if value is not None:
+        return value
+    if fetch_func:
+        value = fetch_func()
+        if value is not None:
+            _set(key, value, expire_sec)
+    return value
+
+
+def delete(key: str):
+    if not _enable:
+        return
+
+    try:
+        memcached_client.delete(key)
+    except Exception:
+        _LOGGER.exception(f"Memcached Delete Fail: {key}")
+
+
 def cache(key: typing.Union[str, typing.Callable], ex: int = 0):
     """
     key = "online_raffle_confs"
@@ -61,7 +91,7 @@ def cache(key: typing.Union[str, typing.Callable], ex: int = 0):
     return decorator
 
 
-def del_cache(key: typing.Union[str, typing.Callable], del_func: typing.Callable):
+def del_cache(key: typing.Union[str, typing.Callable], del_func: typing.Callable = delete):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -73,36 +103,6 @@ def del_cache(key: typing.Union[str, typing.Callable], del_func: typing.Callable
 
         return wrapper
     return decorator
-
-
-def get(
-    key: str, fetch_func: typing.Callable[[], typing.Any] = None, expire_sec: int = 0
-):
-    """
-    get cached value by key and return it if it exists, otherwise,
-    get the value by 'fetch_func' and set it into the cache.
-    """
-    if not _enable:
-        return fetch_func()
-
-    value, err = _get(key)
-    if value is not None:
-        return value
-    if fetch_func:
-        value = fetch_func()
-        if value is not None:
-            _set(key, value, expire_sec)
-    return value
-
-
-def delete(key: str):
-    if not _enable:
-        return
-
-    try:
-        memcached_client.delete(key)
-    except Exception:
-        _LOGGER.exception(f"Memcached Delete Fail: {key}")
 
 
 def _get(key: str):
