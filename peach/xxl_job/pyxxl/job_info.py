@@ -17,10 +17,10 @@ class JobInfo:
     schedule_conf_FIX_RATE: str = ""
     schedule_conf_FIX_DELAY: str = ""
     glueType: str = "BEAN"
-    executorRouteStrategy: str = "FIRST"
+    executorRouteStrategy: str = "ROUND"
     childJobId: str = ""
-    misfireStrategy: str = "DO_NOTHING"
-    executorBlockStrategy: str = "SERIAL_EXECUTION"
+    misfireStrategy: str = "FIRE_ONCE_NOW"
+    executorBlockStrategy: str = "COVER_EARLY"
     executorTimeout: int = 0
     executorFailRetryCount: int = 0
     glueRemark: str = "GLUE代码初始化"
