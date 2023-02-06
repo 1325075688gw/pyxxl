@@ -1,3 +1,4 @@
+import logging
 import typing
 from functools import wraps
 import json
@@ -8,6 +9,8 @@ from django.http import HttpRequest, QueryDict
 from marshmallow import ValidationError, EXCLUDE
 
 from peach.misc.exceptions import IllegalRequestException
+
+_LOGGER = logging.getLogger(__name__)
 
 
 def validate_parameters(schema: object) -> typing.Callable:
@@ -41,6 +44,7 @@ def validate_parameters(schema: object) -> typing.Callable:
             try:
                 request.cleaned_data = schema(unknown=EXCLUDE).load(body)
             except ValidationError as err:
+                _LOGGER.warning(f"invalid parameters: {err}")
                 raise IllegalRequestException(
                     err.messages if settings.DEBUG else "Bad Request"
                 )
