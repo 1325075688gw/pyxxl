@@ -6,6 +6,8 @@ setup(
     description="python tools",
     packages=find_packages(exclude=("tests",)),
     install_requires=[
+        "slack-sdk==3.19.4",
+        "python-telegram-bot==13.14",
         "pytest_aiohttp==1.0.4",
         "pytest_asyncio==0.20.3",
         "aiohttp==3.8.3",
