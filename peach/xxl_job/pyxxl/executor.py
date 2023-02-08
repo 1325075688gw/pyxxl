@@ -46,7 +46,7 @@ class JobHandler:
         cookies = {"REMOTE_COOKIE": ExecutorConfig.remote_cookie}
         job_info = dataclasses.asdict(job_info)
         res = requests.post(
-            url=ExecutorConfig().xxl_admin_baseurl + "jobinfo/add_by_dynamic/",
+            url=ExecutorConfig().xxl_admin_k8s_baseurl + "jobinfo/add_by_dynamic/",
             data=job_info,
             cookies=cookies,
         )
@@ -212,7 +212,7 @@ class Executor:
 
     async def _prepare_slack_msg(self, handler, author, log_id):
         log_url = settings.XXL_JOB[
-            "xxl_admin_baseurl"
+            "xxl_admin_web_baseurl"
         ] + "joblog/logDetailPage?id={}".format(log_id)
         im_id = await sync_to_async(get_slack_id_by_username)(username=author)
         format_im_id = format_slack_user_id_list([im_id])
@@ -278,12 +278,12 @@ class Executor:
             ) / 1000
             handle_duration = format(handle_duration, ".4f")
             await log.update_xxl_job_log(data.traceID, data.logId, handle_duration)
+            g.delete_xxl_run_data(data.traceID)
             if not task_status:
                 msg = await self._prepare_slack_msg(
                     data.executorHandler, data.author, data.logId
                 )
                 await self._send_slack_msg(msg)
-            g.delete_xxl_run_data(data.traceID)
             await self._finish(data.jobId)
 
     async def _finish(self, job_id: int) -> None:

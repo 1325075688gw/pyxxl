@@ -33,7 +33,7 @@ class PyxxlRunner:
             ```python
             runner = PyxxlRunner(
                 ExecutorConfig(
-                    xxl_admin_baseurl="http://localhost:8080/xxl-job-admin/api/",
+                    xxl_admin_k8s_baseurl="http://localhost:8080/xxl-job-admin/api/",
                     executor_app_name="xxl_job-sample",
                     executor_host="172.17.0.1"
                     )
@@ -61,7 +61,7 @@ class PyxxlRunner:
     def _get_xxl_clint(self) -> XXL:
         """for moke"""
         return XXL(
-            self.config.xxl_admin_baseurl + "api/", token=self.config.access_token
+            self.config.xxl_admin_k8s_baseurl + "api/", token=self.config.access_token
         )
 
     async def _init(self) -> None:

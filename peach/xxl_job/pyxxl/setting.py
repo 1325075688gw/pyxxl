@@ -28,7 +28,8 @@ class ExecutorConfig:
     executor_app_name: str = ""
     """xxl-admin上定义的执行器名称,必须一致否则无法注册(如xxl-job-executor-sample). 必填"""
 
-    xxl_admin_baseurl: str = ""
+    xxl_admin_k8s_baseurl: str = ""
+    xxl_admin_web_baseurl: str = ""
     """xxl-admin服务端暴露的restful接口url(如http://localhost:8080/xxl-job-admin/api/). 必填"""
 
     # yaml_config: dict = None
@@ -58,14 +59,14 @@ class ExecutorConfig:
     """.env文件的路径,默认为当前路径下的.env文件."""
 
     # @classmethod
-    # def set_xxl_admin_baseurl(cls):
-    #     cls.xxl_admin_baseurl = yaml_config["xxl_admin_baseurl"]
+    # def set_xxl_admin_k8s_baseurl(cls):
+    #     cls.xxl_admin_k8s_baseurl = yaml_config["xxl_admin_k8s_baseurl"]
     #
     # @classmethod
-    # def get_xxl_admin_baseurl(cls):
-    #     if not cls.xxl_admin_baseurl:
-    #         cls.set_xxl_admin_baseurl()
-    #     return cls.xxl_admin_baseurl
+    # def get_xxl_admin_k8s_baseurl(cls):
+    #     if not cls.xxl_admin_k8s_baseurl:
+    #         cls.set_xxl_admin_k8s_baseurl()
+    #     return cls.xxl_admin_k8s_baseurl
 
     def __post_init__(self) -> None:
         try:
@@ -85,17 +86,17 @@ class ExecutorConfig:
 
         from peach.xxl_job.pyxxl.config import yaml_config
 
-        self.xxl_admin_baseurl = yaml_config["xxl_job"]["xxl_admin_baseurl"]
+        self.xxl_admin_k8s_baseurl = yaml_config["xxl_job"]["xxl_admin_k8s_baseurl"]
         self.executor_app_name = yaml_config["xxl_job"]["appname"]
         self.executor_port = yaml_config["xxl_job"]["executor_port"]
-        self._valid_xxl_admin_baseurl()
+        self._valid_xxl_admin_k8s_baseurl()
         self._valid_executor_app_name()
 
-    def _valid_xxl_admin_baseurl(self) -> None:
-        if not self.xxl_admin_baseurl:
-            raise ValueError("xxl_admin_baseurl is required.")
+    def _valid_xxl_admin_k8s_baseurl(self) -> None:
+        if not self.xxl_admin_k8s_baseurl:
+            raise ValueError("xxl_admin_k8s_baseurl is required.")
 
-        _admin_url: URL = URL(self.xxl_admin_baseurl)
+        _admin_url: URL = URL(self.xxl_admin_k8s_baseurl)
         if not (_admin_url.scheme.startswith("http") and _admin_url.path.endswith("/")):
             raise ValueError(
                 "admin_url must like http://localhost:8080/xxl-job-admin/api/"

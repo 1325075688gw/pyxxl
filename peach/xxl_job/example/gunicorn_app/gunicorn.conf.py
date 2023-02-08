@@ -1,6 +1,6 @@
 import atexit
 
-from multiprocessing.util import _exit_function
+from multiprocessing.util import _exit_function  # type: ignore
 
 from peach.xxl_job.pyxxl import ExecutorConfig, PyxxlRunner
 
@@ -20,7 +20,7 @@ def when_ready(server):
     atexit.unregister(_exit_function)
 
     config = ExecutorConfig(
-        xxl_admin_baseurl="http://localhost:8080/xxl-job-admin/api/",
+        xxl_admin_k8s_baseurl="http://localhost:8080/xxl-job-admin/api/",
         executor_app_name="xxl_job-sample",
         executor_host="172.17.0.1",
     )
