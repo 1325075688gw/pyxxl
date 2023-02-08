@@ -1,8 +1,8 @@
 import importlib.metadata
 
-from .executor import JobHandler
-from .main import PyxxlRunner
-from .setting import ExecutorConfig
+from peach.xxl_job.pyxxl.executor import JobHandler  # type: ignore
+from peach.xxl_job.pyxxl.main import PyxxlRunner
+from peach.xxl_job.pyxxl.setting import ExecutorConfig
 
 
 def help():

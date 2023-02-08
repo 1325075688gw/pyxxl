@@ -3,6 +3,7 @@ import pymysql
 INSTALLED_APPS = [
     "peach.timer",
     "peach.admin",
+    "peach.xxl_job",
 ]
 
 DB_AES_KEY = "ZmtkZiomZmQ4NzZmZGZLZg=="

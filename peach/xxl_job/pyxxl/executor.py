@@ -1,7 +1,8 @@
+# type: ignore
 import asyncio
+import datetime
 import functools
 import json
-import logging
 import time
 import dataclasses
 
@@ -9,6 +10,9 @@ from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Callable, Dict, List, Optional
 from json import JSONDecodeError
+from pytz import timezone
+from asgiref.sync import sync_to_async
+
 
 import requests
 
@@ -19,8 +23,19 @@ from peach.xxl_job.pyxxl.schema import HandlerInfo, RunData
 from peach.xxl_job.pyxxl.setting import ExecutorConfig
 from peach.xxl_job.pyxxl.types import DecoratedCallable
 from peach.xxl_job.pyxxl.xxl_client import XXL
+from peach.xxl_job.pyxxl import log
+from peach.xxl_job.pyxxl.log import set_logger_name
+from peach.xxl_job.pyxxl.log import XxlJobLogger
+from peach.sender.slack_sender.slack_sender import send_slack_msg
+from django.conf import settings
+from peach.xxl_job.pyxxl.define import XXL_JOB_EXECUTE_FAIL_MSG
+from peach.sender.slack_sender.slack_helper import (
+    get_slack_id_by_username,
+    format_slack_user_id_list,
+)
 
-logger = logging.getLogger(__name__)
+set_logger_name(__name__)
+logger = XxlJobLogger()
 
 
 class JobHandler:
@@ -191,15 +206,35 @@ class Executor:
     async def is_running(self, job_id: int) -> bool:
         return job_id in self.tasks
 
+    async def _send_slack_msg(self, msg):
+        channel = settings.IM["slack"]["xxl-job"]["channel"]
+        await sync_to_async(send_slack_msg)(channel=channel, text=msg)
+
+    async def _prepare_slack_msg(self, handler, author, log_id):
+        log_url = settings.XXL_JOB[
+            "xxl_admin_baseurl"
+        ] + "joblog/logDetailPage?id={}".format(log_id)
+        im_id = await sync_to_async(get_slack_id_by_username)(username=author)
+        format_im_id = format_slack_user_id_list([im_id])
+        msg = XXL_JOB_EXECUTE_FAIL_MSG.format(
+            cron_task_name=handler, status="失败", im_uid=format_im_id, log_url=log_url
+        )
+        return msg
+
     async def _run(self, handler: HandlerInfo, start_time: int, data: RunData) -> None:
         try:
+            task_status = True
             if data.executorParams:
                 data.executorParams = json.loads(data.executorParams)
                 if type(data.executorParams) == str:
                     data.executorParams = json.loads(data.executorParams)
-            g.set_xxl_run_data(data)
+            g.set_xxl_run_data(data.traceID, {"xxl_kwargs": data})
+            start_job = '<span style="color: red;">Start job</span>'
             logger.info(
-                "Start job jobId={} logId={} [{}]".format(data.jobId, data.logId, data)
+                "{} jobId={} logId={} [{}]".format(
+                    start_job, data.jobId, data.logId, data
+                ),
+                trace_id=data.traceID,
             )
             func = (
                 handler.handler(data.traceID)
@@ -208,28 +243,47 @@ class Executor:
                     self.thread_pool, handler.handler, data.traceID
                 )
             )
+            handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
+            await log.update_xxl_job_handle_time(data.logId, handle_time)
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
-            g.delete_xxl_run_data(data.traceID)
-            logger.info("Job finished jobId={} logId={}".format(data.jobId, data.logId))
+            finish_job = '<span style="color: red;">Job finished</span>'
+            logger.info(
+                f"{finish_job} jobId={data.jobId} logId={data.logId}",
+                trace_id=data.traceID,
+            )
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:
-            logger.warning(e, exc_info=True)
+            task_status = False
+            logger.warning(e, exc_info=True, trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="CancelledError"
             )
         except JSONDecodeError as e:
-            logger.exception(e)
+            task_status = False
+            logger.exception(e, trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="参数格式错误，期望json字符串"
             )
         except Exception as err:  # pylint: disable=broad-except
-            logger.exception(err)
+            task_status = False
+            logger.exception(err, trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg=str(err)
             )
         finally:
+            handle_duration = (
+                time.time() * 1000 - handle_time.timestamp() * 1000
+            ) / 1000
+            handle_duration = format(handle_duration, ".4f")
+            await log.update_xxl_job_log(data.traceID, data.logId, handle_duration)
+            if not task_status:
+                msg = await self._prepare_slack_msg(
+                    data.executorHandler, data.author, data.logId
+                )
+                await self._send_slack_msg(msg)
+            g.delete_xxl_run_data(data.traceID)
             await self._finish(data.jobId)
 
     async def _finish(self, job_id: int) -> None:

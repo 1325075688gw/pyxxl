@@ -6,8 +6,8 @@ from typing import AsyncGenerator, Optional
 
 from aiohttp import web
 
-from peach.xxl_job.pyxxl.executor import Executor, JobHandler
-from peach.xxl_job.pyxxl.server import create_app
+from peach.xxl_job.pyxxl.executor import Executor, JobHandler  # type: ignore
+from peach.xxl_job.pyxxl.server import create_app  # type: ignore
 from peach.xxl_job.pyxxl.setting import ExecutorConfig
 from peach.xxl_job.pyxxl.xxl_client import XXL
 

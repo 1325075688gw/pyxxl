@@ -1,3 +1,4 @@
+# type: ignore
 import logging
 
 from aiohttp import web
@@ -5,6 +6,7 @@ from aiohttp import web
 from peach.xxl_job.pyxxl import error
 from peach.xxl_job.pyxxl.schema import RunData
 import uuid
+from peach.xxl_job.pyxxl.log import get_xxl_job_log
 
 
 logger = logging.getLogger(__name__)
@@ -83,13 +85,14 @@ async def log(request: web.Request) -> web.Response:
     """
     data = await request.json()
     logger.info("log %s" % data)
+    xxl_job_log = await get_xxl_job_log(data["logId"])
     response = {
         "code": 200,
         "msg": None,
         "content": {
             "fromLineNum": 1,
             "toLineNum": 1,
-            "logContent": "xxx",
+            "logContent": xxl_job_log.handle_log,
             "isEnd": True,
         },
     }
