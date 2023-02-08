@@ -260,9 +260,9 @@ class Executor:
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="CancelledError"
             )
-        except JSONDecodeError as e:
+        except JSONDecodeError:
             task_status = False
-            logger.exception(e, trace_id=data.traceID)
+            logger.exception("参数格式错误，期望json字符串", trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="参数格式错误，期望json字符串"
             )
