@@ -3,13 +3,13 @@
 
 # type: ignore
 
-from django.db import models
 
 import logging
 import sys
 import os
 from peach.helper.singleton.singleton import singleton_decorator
 from logging import getLogger
+from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
 import pytz
 
 _srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
@@ -131,31 +131,6 @@ class XxlJobLogger(logging.Logger):
         self.logger.debug(msg, *args, **kwargs)
 
 
-class XxlJobLog(models.Model):
-    id = models.BigAutoField(auto_created=True, primary_key=True)
-    job_group = models.IntegerField(help_text="执行器主键ID")
-    job_id = models.IntegerField(help_text="任务主键ID")
-    executor_address = models.CharField(max_length=255, help_text="执行器地址，本次执行的地址")
-    executor_handler = models.CharField(max_length=255, help_text="执行器任务handler")
-    executor_param = models.CharField(max_length=128, help_text="执行器任务参数")
-    executor_sharding_param = models.CharField(
-        max_length=32, help_text="执行器任务分片参数，格式如 1/2"
-    )
-    executor_fail_retry_count = models.IntegerField(help_text="失败重试次数")
-    trigger_time = models.DateTimeField(help_text="调度-时间")
-    trigger_code = models.IntegerField(help_text="调度-结果")
-    trigger_msg = models.TextField(help_text="调度-日志")
-    handle_time = models.DateTimeField(help_text="执行-时间")
-    handle_code = models.IntegerField(help_text="执行-状态")
-    handle_msg = models.TextField(help_text="执行-日志")
-    alarm_status = models.SmallIntegerField(help_text="告警状态：0-默认、1-无需告警、2-告警成功、3-告警失败")
-    handle_log = models.TextField(help_text="执行日志：包括执行器地址、执行时间、执行状态、handler中的log输出")
-    handle_duration = models.FloatField(help_text="执行时间，毫秒")
-
-    class Meta:
-        db_table = "xxl_job_log"
-
-
 async def prepare_handle_log(trace_id, id, handle_duration):
     from peach.xxl_job.pyxxl.ctx import g
 
@@ -184,7 +159,6 @@ async def update_xxl_job_log(trace_id, id, handle_duration):
     handle_log = await prepare_handle_log(
         trace_id=trace_id, id=id, handle_duration=handle_duration
     )
-    print(handle_log)
     XxlJobLog.objects.using("xxl_job").filter(id=id).update(
         handle_log=handle_log, handle_duration=handle_duration
     )
@@ -197,3 +171,7 @@ async def get_xxl_job_log(id):
 
 async def update_xxl_job_handle_time(id, handle_time):
     XxlJobLog.objects.using("xxl_job").filter(id=id).update(handle_time=handle_time)
+
+
+async def delte_xxl_job_info(id):
+    XxlJobInfo.objects.using("xxl_job").filter(id=id).delete()

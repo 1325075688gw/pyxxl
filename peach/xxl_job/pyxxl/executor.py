@@ -285,6 +285,8 @@ class Executor:
             g.delete_xxl_run_data(data.traceID)
             if task_status:
                 await self._finish(data.jobId)
+                if data.dynamicAdd == 1:
+                    await log.delte_xxl_job_info(data.jobId)
             else:
                 msg = await self._prepare_slack_msg(
                     data.executorHandler, data.author, data.logId

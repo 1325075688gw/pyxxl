@@ -37,6 +37,7 @@ class RunData:
     executorBlockStrategy: str
     traceID: str
     author: str
+    dynamicAdd: int
 
     executorParams: Optional[typing.Any] = None
     executorTimeout: Optional[int] = None
