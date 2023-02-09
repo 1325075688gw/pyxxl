@@ -2,27 +2,25 @@ from typing import Any, Optional
 import time
 
 from peach.xxl_job.pyxxl.schema import RunData
-
-
-_global_vars = {}
+from peach.helper.global_var.global_var import GlobalVar
 
 
 class GlobalVars:
     @staticmethod
     def _set_var(name: str, obj: Any) -> None:
-        _global_vars[name] = obj
+        GlobalVar.global_dict[name] = obj
 
     @staticmethod
     def _get_var(name: str) -> Any:
-        return _global_vars.get(name, {})
+        return GlobalVar.global_dict.get(name, {})
 
     @staticmethod
     def _delete_var(name: str):
-        _global_vars.pop(name)
+        GlobalVar.global_dict.pop(name)
 
     @staticmethod
     def try_get(name: str) -> Optional[Any]:
-        return _global_vars.get(name)
+        return GlobalVar.global_dict.get(name)
 
     @staticmethod
     def set_xxl_run_data(trace_id, data, append=False) -> None:
