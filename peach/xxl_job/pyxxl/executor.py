@@ -33,6 +33,7 @@ from peach.sender.slack_sender.slack_helper import (
     get_slack_id_by_username,
     format_slack_user_id_list,
 )
+from peach.xxl_job.pyxxl.job_info import JobInfo
 
 set_logger_name(__name__)
 logger = XxlJobLogger()
@@ -42,8 +43,12 @@ class JobHandler:
     _handlers: Dict[str, HandlerInfo] = {}
 
     @classmethod
-    def dynamic_register(cls, job_info):
+    def dynamic_register(cls, job_info: JobInfo):
         cookies = {"REMOTE_COOKIE": ExecutorConfig.remote_cookie}
+        if type(job_info.executorHandler) != str:
+            handler = job_info.executorHandler.__class__(job_info.executorHandler)
+            handler_name = handler.value  # type: ignore
+            job_info.executorHandler = handler_name
         job_info = dataclasses.asdict(job_info)
         res = requests.post(
             url=ExecutorConfig().xxl_admin_k8s_baseurl + "jobinfo/add_by_dynamic/",
