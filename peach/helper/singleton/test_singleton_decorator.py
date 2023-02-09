@@ -14,6 +14,13 @@ class A:
 
 
 def test_singleton_decorator():
+
+    import datetime
+    from pytz import timezone
+
+    handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
+    print(handle_time)
+
     a = A(name="张三", age=23, citys={"重庆": "火锅", "成都": "冒菜"})
     b = A(name="张三", age=23, citys={"重庆": "火锅", "成都": "冒菜"})
     c = A(name="张三", age=23, citys={"成都": "冒菜", "重庆": "火锅"})
@@ -22,7 +29,20 @@ def test_singleton_decorator():
     assert id(a) == id(b) == id(c)
     assert id(a) != id(d)
 
-    print(id(a))
+    print("\n", id(a))
+    print(id(b))
+    print(id(c))
+    print(id(d))
+
+    a = A("张三", 23, citys={"重庆": "火锅", "成都": "冒菜"})
+    b = A("张三", 23, citys={"重庆": "火锅", "成都": "冒菜"})
+    c = A(age=23, name="张三", citys={"成都": "冒菜", "重庆": "火锅"})
+    d = A(name="张三", age=23, citys={"成都": "冒菜", "武汉": "热干面"})
+
+    assert id(a) == id(b) == id(c)
+    assert id(a) != id(d)
+
+    print("\n", id(a))
     print(id(b))
     print(id(c))
     print(id(d))

@@ -10,6 +10,7 @@ import sys
 import os
 from peach.helper.singleton.singleton import singleton_decorator
 from logging import getLogger
+import pytz
 
 _srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
 
@@ -25,9 +26,9 @@ NOTSET = 0
 
 @singleton_decorator
 class XxlJobLogger(logging.Logger):
-    def __init__(self, name=__name__):
+    def __init__(self, name):
         self.logger = getLogger(name)
-        super().__init__(name=name, level=INFO)
+        super().__init__(name, DEBUG)
 
     def _log(
         self,
@@ -161,6 +162,8 @@ async def prepare_handle_log(trace_id, id, handle_duration):
     data = g.get_xxl_run_data(trace_id=trace_id)
     handle_log = data.get("handle_log")
     xxl_job_log = await get_xxl_job_log(id)
+    xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
+    handle_log_str = '<span style="color: red; font-weight:600">执行log:</span>'
     executor_log_params = (
         f"执行器地址: {xxl_job_log.executor_address} \n"
         f"执行handler: {xxl_job_log.executor_handler} \n"
@@ -170,10 +173,9 @@ async def prepare_handle_log(trace_id, id, handle_duration):
         f"执行时间: {xxl_job_log.handle_time} \n"
         f"执行状态: {xxl_job_log.handle_code} \n"
         f"执行耗时: {handle_duration} s\n"
-        f"执行log: \n"
+        f"{handle_log_str} \n"
         f"{handle_log}"
     )
-    print(executor_log_params)
 
     return executor_log_params
 

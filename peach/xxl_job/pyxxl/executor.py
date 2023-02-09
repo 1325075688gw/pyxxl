@@ -225,6 +225,7 @@ class Executor:
         return msg
 
     async def _run(self, handler: HandlerInfo, start_time: int, data: RunData) -> None:
+        handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
         try:
             task_status = True
             if data.executorParams:
