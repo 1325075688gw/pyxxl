@@ -36,9 +36,7 @@ class GlobalVars:
             func_name = f'<span style="color: red;">{str(handle_log.funcName)}</span>'
             lineno = f'<span style="color: red;">{str(handle_log.lineno)}</span>'
             path = path_name + ", in " + func_name + ", line " + lineno
-            handle_log = (
-                f"\n" f"{level_name} {data_time} {path}\n" f"    {handle_log.msg}"
-            )
+            handle_log = f"\n{level_name} {data_time} {path}\n    {handle_log.msg}"  # type: ignore
             old_handle_log = GlobalVars.get_xxl_run_data(trace_id).get("handle_log", "")
             new_handle_log = old_handle_log + handle_log
             data = {"handle_log": new_handle_log}

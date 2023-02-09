@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from django.conf import settings
 
 
 @dataclass
@@ -27,10 +28,8 @@ class JobInfo:
     glueSource: str = ""
 
     def __post_init__(self):
-        from peach.xxl_job.pyxxl.config import yaml_config
-
         self.cronGen_display = self.scheduleConf
-        self.appname = yaml_config["xxl_job"]["appname"]
+        self.appname = settings.XXL_JOB["appname"]
 
     # def __init__(self):
 

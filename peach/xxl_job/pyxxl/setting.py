@@ -8,6 +8,7 @@ from typing import Optional
 from yarl import URL
 
 from peach.xxl_job.pyxxl.utils import get_network_ip
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -84,11 +85,9 @@ class ExecutorConfig:
                 )
                 setattr(self, param.name, env_val)
 
-        from peach.xxl_job.pyxxl.config import yaml_config
-
-        self.xxl_admin_k8s_baseurl = yaml_config["xxl_job"]["xxl_admin_k8s_baseurl"]
-        self.executor_app_name = yaml_config["xxl_job"]["appname"]
-        self.executor_port = yaml_config["xxl_job"]["executor_port"]
+        self.xxl_admin_k8s_baseurl = settings.XXL_JOB["xxl_admin_k8s_baseurl"]
+        self.executor_app_name = settings.XXL_JOB["appname"]
+        self.executor_port = settings.XXL_JOB["executor_port"]
         self._valid_xxl_admin_k8s_baseurl()
         self._valid_executor_app_name()
 
