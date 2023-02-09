@@ -163,7 +163,7 @@ async def prepare_handle_log(trace_id, id, handle_duration):
     handle_log = data.get("handle_log")
     xxl_job_log = await get_xxl_job_log(id)
     xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
-    handle_log_str = '<span style="color: red; font-weight:600">执行log:</span>'
+    handle_log_str = '<span style="color: black; font-weight:600">执行log:</span>'
     executor_log_params = (
         f"执行器地址: {xxl_job_log.executor_address} \n"
         f"执行handler: {xxl_job_log.executor_handler} \n"
