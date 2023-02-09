@@ -9,6 +9,7 @@ import logging
 import sys
 import os
 from peach.helper.singleton.singleton import singleton_decorator
+from logging import getLogger
 
 _srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
 
@@ -21,22 +22,12 @@ INFO = 20
 DEBUG = 10
 NOTSET = 0
 
-logger = object
-logger_name = ""
-
-
-def set_logger_name(name):
-    global logger
-    global logger_name
-    logger_name = name
-    logger = logging.getLogger(name)
-
 
 @singleton_decorator
-class XxlJobLogger(logging.Logger, logger):
-    def __init__(self, level=WARNING):
-        global logger_name
-        super().__init__(logger_name, level)
+class XxlJobLogger(logging.Logger):
+    def __init__(self, name=__name__):
+        self.logger = getLogger(name)
+        super().__init__(name=name, level=INFO)
 
     def _log(
         self,
@@ -74,8 +65,8 @@ class XxlJobLogger(logging.Logger, logger):
         return record
 
     @staticmethod
-    def getLogger(name):
-        return logging.getLogger(name)
+    def getLogger(logger_name):
+        return logging.getLogger(logger_name)
 
     def info(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -87,7 +78,7 @@ class XxlJobLogger(logging.Logger, logger):
                 {"handle_log": self._log(INFO, msg, args, **kwargs)},
                 append=True,
             )
-        super().info(msg, *args, **kwargs)
+        self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -99,7 +90,7 @@ class XxlJobLogger(logging.Logger, logger):
                 {"handle_log": self._log(WARNING, msg, args, **kwargs)},
                 append=True,
             )
-        super().warning(msg, *args, **kwargs)
+        self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -107,7 +98,7 @@ class XxlJobLogger(logging.Logger, logger):
         trace_id = kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(trace_id, {"handle_log": msg}, append=True)
-        super().warn(msg, *args, **kwargs)
+        self.logger.warn(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -119,7 +110,7 @@ class XxlJobLogger(logging.Logger, logger):
                 {"handle_log": self._log(ERROR, msg, args, **kwargs)},
                 append=True,
             )
-        super().error(msg, *args, **kwargs)
+        self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         # from peach.xxl_job.pyxxl.ctx import g
@@ -136,7 +127,7 @@ class XxlJobLogger(logging.Logger, logger):
                 {"handle_log": self._log(DEBUG, msg, args, **kwargs)},
                 append=True,
             )
-        super().debug(msg, *args, **kwargs)
+        self.logger.debug(msg, *args, **kwargs)
 
 
 class XxlJobLog(models.Model):

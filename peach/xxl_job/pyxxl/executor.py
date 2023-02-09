@@ -24,7 +24,6 @@ from peach.xxl_job.pyxxl.setting import ExecutorConfig
 from peach.xxl_job.pyxxl.types import DecoratedCallable
 from peach.xxl_job.pyxxl.xxl_client import XXL
 from peach.xxl_job.pyxxl import log
-from peach.xxl_job.pyxxl.log import set_logger_name
 from peach.xxl_job.pyxxl.log import XxlJobLogger
 from peach.sender.slack_sender.slack_sender import send_slack_msg
 from django.conf import settings
@@ -35,8 +34,7 @@ from peach.sender.slack_sender.slack_helper import (
 )
 from peach.xxl_job.pyxxl.job_info import JobInfo
 
-set_logger_name(__name__)
-logger = XxlJobLogger()
+logger = XxlJobLogger(__name__)
 
 
 class JobHandler:
