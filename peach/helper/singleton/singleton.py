@@ -8,10 +8,10 @@ import inspect
 
 # 通过装饰器实现单例模式，可实现快速插拔，方便后续其他Client快速实现单例模式，比如（RedisClient、MySQLClient、S3Client）
 def singleton_decorator(cls):
-    GlobalVar.global_dict["_instance"] = {}
+    GlobalVar.global_dict["instances"] = {}
 
     # 根据args生成对应的kwargs
-    def _generate_params_dict_from_args(*args):
+    def _generate_args_dict_from_args(*args):
         if not args:
             return {}
 
@@ -45,15 +45,15 @@ def singleton_decorator(cls):
 
     def _singleton(*args, **kwargs):
         # 将args、kwargs转为字符串并进行拼接
-        args_dict = _generate_params_dict_from_args(*args)
+        args_dict = _generate_args_dict_from_args(*args)
         kwargs_dict = copy.deepcopy(kwargs)
         kwargs_dict.update(args_dict)
         params_str = _generate_params_str(**kwargs_dict)
         cls_name = "{}_{}".format(str(cls), params_str)
-        if cls_name not in GlobalVar.global_dict["_instance"]:
+        if cls_name not in GlobalVar.global_dict["instances"]:
             # 创建一个对象,并保存到字典当中
-            GlobalVar.global_dict["_instance"][cls_name] = cls(*args, **kwargs)
+            GlobalVar.global_dict["instances"][cls_name] = cls(*args, **kwargs)
         # 将实例对象返回
-        return GlobalVar.global_dict["_instance"][cls_name]
+        return GlobalVar.global_dict["instances"][cls_name]
 
     return _singleton
