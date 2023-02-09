@@ -266,10 +266,18 @@ class Executor:
             )
         except JSONDecodeError:
             task_status = False
-            logger.exception(msg="参数格式错误，期望json字符串", trace_id=data.traceID)
-            await self.xxl_client.callback(
-                data.logId, start_time, code=500, msg="参数格式错误，期望json字符串"
-            )
+            msg = "参数格式错误，期望json字符串!"
+            logger.exception(msg=msg, trace_id=data.traceID)
+            await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
+        except KeyError as e:
+            try:
+                msg = "期望{}字段, 但貌似发生了错误!".format(e.args[0])
+                logger.error(msg=msg, trace_id=data.traceID)
+                await self.xxl_client.callback(
+                    data.logId, start_time, code=500, msg=msg
+                )
+            except Exception as e:
+                logger.error(msg=str(e), trace_id=data.traceID)
         except Exception as err:  # pylint: disable=broad-except
             task_status = False
             logger.exception(err, trace_id=data.traceID)
