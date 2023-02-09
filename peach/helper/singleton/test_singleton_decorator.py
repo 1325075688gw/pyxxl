@@ -29,7 +29,7 @@ def test_singleton_decorator():
     assert id(a) == id(b) == id(c)
     assert id(a) != id(d)
 
-    print("\n", id(a))
+    print(f"\n{id(a)}")
     print(id(b))
     print(id(c))
     print(id(d))
@@ -42,7 +42,7 @@ def test_singleton_decorator():
     assert id(a) == id(b) == id(c)
     assert id(a) != id(d)
 
-    print("\n", id(a))
+    print(f"\n{id(a)}")
     print(id(b))
     print(id(c))
     print(id(d))
