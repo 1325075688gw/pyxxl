@@ -28,18 +28,18 @@ def singleton_decorator(cls):
 
         kwargs_str = ""
         kwargs_list = sorted(kwargs.items(), key=lambda item: item[0])
-        for key in kwargs_list:
-            _key, _value = key[0], key[1]
-            _tmp_value = ""
-            if type(_value) != dict:
-                _tmp_value = _value
+        for item in kwargs_list:
+            key, value = item[0], item[1]
+            tmp_value = ""
+            if type(value) != dict:
+                tmp_value = value
             else:
-                _tmp_value_list = sorted(_value.items(), key=lambda item: item[0])
-                _tmp_value_res_dict = {}
-                for _tmp_key in _tmp_value_list:
-                    _tmp_value_res_dict[_tmp_key[0]] = _tmp_key[1]
-                _tmp_value = _generate_params_str(**_tmp_value_res_dict)
-            kwargs_str += str(_key) + ":" + str(_tmp_value) + ","
+                tmp_value_list = sorted(value.items(), key=lambda item: item[0])
+                tmp_value_dict = {}
+                for tmp_item in tmp_value_list:
+                    tmp_value_dict[tmp_item[0]] = tmp_item[1]
+                tmp_value = _generate_params_str(**tmp_value_dict)
+            kwargs_str += str(key) + ":" + str(tmp_value) + ","
 
         return kwargs_str[:-1]
 
