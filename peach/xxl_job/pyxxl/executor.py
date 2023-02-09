@@ -279,12 +279,13 @@ class Executor:
             handle_duration = format(handle_duration, ".4f")
             await log.update_xxl_job_log(data.traceID, data.logId, handle_duration)
             g.delete_xxl_run_data(data.traceID)
-            if not task_status:
+            if task_status:
+                await self._finish(data.jobId)
+            else:
                 msg = await self._prepare_slack_msg(
                     data.executorHandler, data.author, data.logId
                 )
                 await self._send_slack_msg(msg)
-            await self._finish(data.jobId)
 
     async def _finish(self, job_id: int) -> None:
         self.tasks.pop(job_id, None)

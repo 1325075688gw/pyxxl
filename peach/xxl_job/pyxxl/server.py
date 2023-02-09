@@ -7,6 +7,14 @@ from peach.xxl_job.pyxxl import error
 from peach.xxl_job.pyxxl.schema import RunData
 import uuid
 from peach.xxl_job.pyxxl.log import get_xxl_job_log
+from peach.xxl_job.pyxxl.define import XXL_JOB_HANDLER_NOT_FOUND
+from asgiref.sync import sync_to_async
+from django.conf import settings
+from peach.sender.slack_sender.slack_sender import send_slack_msg
+from peach.sender.slack_sender.slack_helper import (
+    get_slack_id_by_username,
+    format_slack_user_id_list,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -61,6 +69,11 @@ async def run(request: web.Request) -> web.Response:
     except error.JobDuplicateError as e:
         return web.json_response(dict(code=500, msg=e.message))
     except error.JobNotFoundError as e:
+        im_id = await sync_to_async(get_slack_id_by_username)(username=run_data.author)
+        format_im_id = format_slack_user_id_list([im_id])
+        msg = XXL_JOB_HANDLER_NOT_FOUND.format(format_im_id, run_data.executorHandler)
+        channel = settings.IM["slack"]["xxl-job"]["channel"]
+        await sync_to_async(send_slack_msg)(channel=channel, text=msg)
         return web.json_response(dict(code=500, msg=e.message))
 
     return web.json_response(dict(code=200, msg=None))
