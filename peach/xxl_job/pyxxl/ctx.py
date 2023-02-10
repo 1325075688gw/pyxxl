@@ -5,6 +5,16 @@ from peach.xxl_job.pyxxl.schema import RunData
 from peach.helper.global_var.global_var import GlobalVar
 
 
+ColorDict = {
+    "DEBUG": "black",
+    "INFO": "green",
+    "WARNING": "yellow",
+    "WARN": "yellow",
+    "EXCEPTION": "red",
+    "ERROR": "red",
+}
+
+
 class GlobalVars:
     @staticmethod
     def _set_var(name: str, obj: Any) -> None:
@@ -28,13 +38,13 @@ class GlobalVars:
             handle_log = data["handle_log"]
             time_stamp = handle_log.created  # 以2020/10/5 10:12:56为例子
             time_tuple = time.localtime(time_stamp)
-            data_time = time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)
-            level_name = f'<span style="color: red;">{str(handle_log.levelname)}</span>'
-            path_name = str(handle_log.pathname)
+            data_time = f'<span style="color: red;">{time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)}</span>'
+            level_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.levelname)}</span>'
+            path_name = f'<span style="color: red;">{str(handle_log.pathname)}</span>'
             func_name = f'<span style="color: red;">{str(handle_log.funcName)}</span>'
             lineno = f'<span style="color: red;">{str(handle_log.lineno)}</span>'
             path = path_name + ", in " + func_name + ", line " + lineno
-            handle_log = f"\n{level_name} {data_time} {path}\n    {handle_log.msg}"  # type: ignore
+            handle_log = f"\n{level_name} {data_time} {path}\n      {handle_log.msg}"  # type: ignore
             old_handle_log = GlobalVars.get_xxl_run_data(trace_id).get("handle_log", "")
             new_handle_log = old_handle_log + handle_log
             data = {"handle_log": new_handle_log}

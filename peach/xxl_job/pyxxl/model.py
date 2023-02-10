@@ -25,6 +25,7 @@ class XxlJobLog(models.Model):
     alarm_status = models.SmallIntegerField(help_text="告警状态：0-默认、1-无需告警、2-告警成功、3-告警失败")
     handle_log = models.TextField(help_text="执行日志：包括执行器地址、执行时间、执行状态、handler中的log输出")
     handle_duration = models.FloatField(help_text="执行时间，秒")
+    author = models.CharField(max_length=128, help_text="任务归属")
 
     class Meta:
         db_table = "xxl_job_log"
