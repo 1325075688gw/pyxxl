@@ -140,15 +140,15 @@ async def prepare_handle_log(trace_id, id, handle_duration):
     xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
     handle_log_str = '<span style="color: black; font-weight:600">执行log:</span>'
     executor_log_params = (
-        f"任务归属        : {xxl_job_log.author} \n"
-        f"调度时间        : {xxl_job_log.trigger_time} \n"
-        f"调度结果        : {xxl_job_log.trigger_code} \n"
-        f"执行器地址      : {xxl_job_log.executor_address} \n"
-        f"执行handler    : {xxl_job_log.executor_handler} \n"
-        f"执行器任务参数   : {xxl_job_log.executor_param if xxl_job_log.executor_param else '参数为空！'} \n"
-        f"执行时间        : {xxl_job_log.handle_time} \n"
-        f"执行状态        : {'成功' if xxl_job_log.handle_code == 200 else '失败'} \n"
-        f"执行耗时        : {handle_duration} s\n"
+        f"{'任务归属  ':10}: {xxl_job_log.author} \n"
+        f"{'调度时间  ':10}: {xxl_job_log.trigger_time} \n"
+        f"{'调度结果  ':10}: {xxl_job_log.trigger_code} \n"
+        f"{'执行器地址 ':9}: {xxl_job_log.executor_address} \n"
+        f"{'执行handler ':11}: {xxl_job_log.executor_handler} \n"
+        f"{'执行器任务参数':8}: {xxl_job_log.executor_param if xxl_job_log.executor_param else '参数为空！'} \n"
+        f"{'执行时间  ':10}: {xxl_job_log.handle_time} \n"
+        f"{'执行状态  ':10}: {'成功' if int(xxl_job_log.handle_code) == 200 else '失败'} \n"
+        f"{'执行耗时  ':10}: {handle_duration} s\n"
         f"{handle_log_str} \n"
         f"{handle_log}"
     )

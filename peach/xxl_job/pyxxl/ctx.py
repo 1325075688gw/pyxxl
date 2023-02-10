@@ -38,11 +38,14 @@ class GlobalVars:
             handle_log = data["handle_log"]
             time_stamp = handle_log.created  # 以2020/10/5 10:12:56为例子
             time_tuple = time.localtime(time_stamp)
-            data_time = f'<span style="color: red;">{time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)}</span>'
+            data_time = (
+                f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">'
+                f'{time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)}</span>'
+            )
             level_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.levelname)}</span>'
-            path_name = f'<span style="color: red;">{str(handle_log.pathname)}</span>'
-            func_name = f'<span style="color: red;">{str(handle_log.funcName)}</span>'
-            lineno = f'<span style="color: red;">{str(handle_log.lineno)}</span>'
+            path_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.pathname)}</span>'
+            func_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.funcName)}</span>'
+            lineno = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.lineno)}</span>'
             path = path_name + ", in " + func_name + ", line " + lineno
             handle_log = f"\n{level_name} {data_time} {path}\n      {handle_log.msg}"  # type: ignore
             old_handle_log = GlobalVars.get_xxl_run_data(trace_id).get("handle_log", "")
