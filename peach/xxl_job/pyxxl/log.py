@@ -70,65 +70,42 @@ class XxlJobLogger(logging.Logger):
         return logging.getLogger(logger_name)
 
     def info(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
         trace_id = kwargs.pop("trace_id", None)
-        if trace_id:
-            g.set_xxl_run_data(
-                trace_id,
-                {"handle_log": self._log(INFO, msg, args, **kwargs)},
-                append=True,
-            )
+        self._save_handle_log(msg, trace_id, INFO, *args, **kwargs)
         self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
         trace_id = kwargs.pop("trace_id", None)
-        if trace_id:
-            g.set_xxl_run_data(
-                trace_id,
-                {"handle_log": self._log(WARNING, msg, args, **kwargs)},
-                append=True,
-            )
+        self._save_handle_log(msg, trace_id, WARNING, *args, **kwargs)
         self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
         trace_id = kwargs.pop("trace_id", None)
-        if trace_id:
-            g.set_xxl_run_data(trace_id, {"handle_log": msg}, append=True)
+        self._save_handle_log(msg, trace_id, WARN, *args, **kwargs)
         self.logger.warn(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
         trace_id = kwargs.pop("trace_id", None)
-        if trace_id:
-            g.set_xxl_run_data(
-                trace_id,
-                {"handle_log": self._log(ERROR, msg, args, **kwargs)},
-                append=True,
-            )
+        self._save_handle_log(msg, trace_id, ERROR, *args, **kwargs)
         self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
-        # from peach.xxl_job.pyxxl.ctx import g
-        # g.set_xxl_run_data(kwargs["trace_id"], {"handle_log": msg})
         self.error(msg, *args, exc_info=True, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
         trace_id = kwargs.pop("trace_id", None)
+        self._save_handle_log(msg, trace_id, DEBUG, *args, **kwargs)
+        self.logger.debug(msg, *args, **kwargs)
+
+    def _save_handle_log(self, msg, trace_id=None, level=INFO, *args, **kwargs):
         if trace_id:
+            from peach.xxl_job.pyxxl.ctx import g
+
             g.set_xxl_run_data(
                 trace_id,
-                {"handle_log": self._log(DEBUG, msg, args, **kwargs)},
+                {"handle_log": self._log(level, msg, args, **kwargs)},
                 append=True,
             )
-        self.logger.debug(msg, *args, **kwargs)
 
 
 async def prepare_handle_log(trace_id, id, handle_duration):

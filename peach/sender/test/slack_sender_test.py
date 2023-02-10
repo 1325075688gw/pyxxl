@@ -40,14 +40,14 @@ def test_send_slack_msg():
     format_user_id_list = format_slack_user_id_list(user_id_list)
     print("format_user_id_list", format_user_id_list)
     msg = "定时任务【{cron_task_name}】执行【{status}】 {im_uid}, 任务执行日志: ({log_url})"
-    work_sys_channel = settings.IM["slack"]["work_sys_channel"]
+    channel = settings.IM["slack"]["xxl-job"]["channel"]
     text = msg.format(
         cron_task_name="撒哈拉沙漠",
         status="success",
         im_uid=format_user_id_list,
         log_url="http://www.baidu.com",
     )
-    send_slack_msg(work_sys_channel, text)
+    send_slack_msg(channel, text)
 
 
 def test_get_slack_id_by_username():
