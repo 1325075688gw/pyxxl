@@ -275,6 +275,7 @@ class Executor:
             await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
         except KeyError as e:
             try:
+                task_status = False
                 msg = "期望{}字段, 但貌似发生了错误!".format(e.args[0])
                 logger.error(msg=msg, trace_id=data.traceID)
                 await self.xxl_client.callback(
