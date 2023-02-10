@@ -1,0 +1,5 @@
+xxl_job:
+  xxl_admin_k8s_baseurl: "http://xxl-job:8080/xxl-job-admin/"
+  xxl_admin_web_baseurl: "https://xxl-job.easycodedev.com/xxl-job-admin/"
+  appname: "xxl-job-mala-core-python-executor"
+  executor_port: "9000"
