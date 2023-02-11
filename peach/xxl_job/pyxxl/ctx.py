@@ -43,7 +43,7 @@ class GlobalVars:
                 f'{time.strftime("%Y-%m-%d %H:%M:%S", time_tuple)}</span>'
             )
             level_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.levelname)}</span>'
-            path_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.pathname)}</span>'
+            path_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.name)}</span>'
             func_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.funcName)}</span>'
             lineno = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.lineno)}</span>'
             path = path_name + ", in " + func_name + ", line " + lineno
