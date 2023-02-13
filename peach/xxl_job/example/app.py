@@ -51,7 +51,7 @@ job_info = {
     "glueType": "BEAN",
     "executorHandler": "demoJobHandler",
     "executorParam": "123",
-    "executorRouteStrategy": "FIRST",
+    "executorRouteStrategy": "FAILOVER",
     "childJobId": "",
     "misfireStrategy": "DO_NOTHING",
     "executorBlockStrategy": "SERIAL_EXECUTION",

@@ -8,8 +8,8 @@ from peach.helper.global_var.global_var import GlobalVar
 ColorDict = {
     "DEBUG": "black",
     "INFO": "green",
-    "WARNING": "yellow",
-    "WARN": "yellow",
+    "WARNING": "blue",
+    "WARN": "blue",
     "EXCEPTION": "red",
     "ERROR": "red",
 }

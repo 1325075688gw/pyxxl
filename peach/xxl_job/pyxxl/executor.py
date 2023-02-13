@@ -264,7 +264,7 @@ class Executor:
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:
             task_status = False
-            logger.warning(e, exc_info=True, trace_id=data.traceID)
+            logger.warning(str(e), exc_info=True, trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="CancelledError"
             )
