@@ -6,12 +6,11 @@ import logging
 from slack_sdk.errors import SlackApiError
 from django.conf import settings
 from peach.sender.slack_sender.define import SLACK_USER_LIST
-from peach.sender.slack_sender.slack_client import SlackClient
+from peach.sender.slack_sender.slack_client import slack_client
 import traceback
 
 _LOGGER = logging.getLogger(__name__)
 redis_client = ProxyAgent(url=settings.REDIS_URL)
-slack_client = SlackClient()
 
 
 def get_slack_user_list() -> list:
