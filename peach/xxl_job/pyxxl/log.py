@@ -27,6 +27,7 @@ NOTSET = 0
 @singleton_decorator
 class XxlJobLogger(logging.Logger):
     def __init__(self, name):
+        self.logger = self.getLogger(name)
         super().__init__(name, DEBUG)
 
     def _log(
@@ -78,7 +79,7 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(INFO, msg, args, **kwargs)},
                 append=True,
             )
-        super().info(msg, *args, **kwargs)
+        self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -90,7 +91,7 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(WARNING, msg, args, **kwargs)},
                 append=True,
             )
-        super().warning(msg, *args, **kwargs)
+        self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -98,7 +99,7 @@ class XxlJobLogger(logging.Logger):
         trace_id = kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(trace_id, {"handle_log": msg}, append=True)
-        super().warn(msg, *args, **kwargs)
+        self.logger.warn(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
@@ -110,7 +111,7 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(ERROR, msg, args, **kwargs)},
                 append=True,
             )
-        super().error(msg, *args, **kwargs)
+        self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         self.error(msg, *args, exc_info=True, **kwargs)
@@ -125,7 +126,7 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(DEBUG, msg, args, **kwargs)},
                 append=True,
             )
-        super().debug(msg, *args, **kwargs)
+        self.logger.debug(msg, *args, **kwargs)
 
 
 async def prepare_handle_log(trace_id, id, handle_duration):
