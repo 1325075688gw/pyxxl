@@ -235,9 +235,9 @@ class Executor:
             g.set_xxl_run_data(data.traceID, {"xxl_kwargs": data})
             start_job = '<span style="color: red;">Start job</span>'
             data_str = str(data)
-            format_data = f"     {data_str[0:128]}\n     {data_str[128:256]}\n     {data_str[256:]}"
+            format_data = f"{data_str[0:128]}\n     {data_str[128:256]}\n     {data_str[256:]}"  # type: ignore
             logger.info(
-                "{} jobId={} logId={} \n[{}]".format(
+                "{} jobId={} logId={} \n     [{}]".format(
                     start_job, data.jobId, data.logId, format_data
                 ),
                 trace_id=data.traceID,
