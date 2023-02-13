@@ -72,7 +72,7 @@ class XxlJobLogger(logging.Logger):
         from peach.xxl_job.pyxxl.ctx import g
 
         trace_id = kwargs.pop("trace_id", None)
-        if 1:
+        if trace_id:
             g.set_xxl_run_data(
                 trace_id,
                 {"handle_log": self._log(INFO, msg, args, **kwargs)},
