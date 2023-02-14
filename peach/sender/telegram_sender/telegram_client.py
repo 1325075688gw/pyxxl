@@ -12,5 +12,8 @@ _LOGGER = logging.getLogger(__name__)
 
 @singleton_decorator
 class TelegramBot(telegram.Bot):
-    def __init__(self, token=settings.settings.IM["telegram"]["xxl-job"]["token"]):
+    def __init__(self, token):
         super().__init__(token=token)
+
+
+telegram_bot = TelegramBot(token=settings.settings.IM["telegram"]["xxl-job"]["token"])

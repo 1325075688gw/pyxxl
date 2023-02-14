@@ -8,5 +8,8 @@ from django.conf import settings
 
 @singleton_decorator
 class SlackClient(WebClient):
-    def __init__(self, token=settings.IM["slack"]["xxl-job"]["token"]):
+    def __init__(self, token):
         super().__init__(token=token)
+
+
+slack_client = SlackClient(token=settings.IM["slack"]["xxl-job"]["token"])

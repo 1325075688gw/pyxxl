@@ -6,11 +6,9 @@ import logging
 from io import IOBase
 from typing import Union, Sequence
 from slack_sdk.errors import SlackApiError
-from peach.sender.slack_sender.slack_client import SlackClient
+from peach.sender.slack_sender.slack_client import slack_client
 
 _LOGGER = logging.getLogger(__name__)
-
-slack_client = SlackClient()
 
 
 def send_slack_msg(channel: str, text: str) -> None:
