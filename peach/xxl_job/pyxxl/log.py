@@ -94,12 +94,7 @@ class XxlJobLogger(logging.Logger):
         self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
-
-        trace_id = kwargs.pop("trace_id", None)
-        if trace_id:
-            g.set_xxl_run_data(trace_id, {"handle_log": msg}, append=True)
-        self.logger.warn(msg, *args, **kwargs)
+        self.warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
         from peach.xxl_job.pyxxl.ctx import g
