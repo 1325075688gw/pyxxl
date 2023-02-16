@@ -57,6 +57,7 @@ class XxlJobInfo(models.Model):
     trigger_last_time = models.BigIntegerField(help_text="上次调度时间")
     trigger_next_time = models.BigIntegerField(help_text="下次调度时间")
     dynamic_add = models.IntegerField(help_text="0-非动态添加，1-动态添加")
+    trigger_time_translation = models.CharField(max_length=256, help_text="执行时间中文翻译")
 
     class Meta:
         db_table = "xxl_job_info"

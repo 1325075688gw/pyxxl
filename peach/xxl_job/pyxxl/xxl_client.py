@@ -41,7 +41,9 @@ class XXL:
 
         _admin_url: URL = URL(admin_url)
         if not (_admin_url.scheme.startswith("http") and _admin_url.path.endswith("/")):
-            raise ValueError("admin_url must like http://localhost:8080/xxl-job-admin/api/")
+            raise ValueError(
+                "admin_url must like http://localhost:8080/xxl-job-admin/api/"
+            )
 
         # https://docs.aiohttp.org/en/stable/client_reference.html#baseconnector
         self.url_path = _admin_url.path
@@ -73,7 +75,9 @@ class XXL:
         await self._post("registryRemove", payload)
         logger.info("RegistryRemove successful. %s" % payload)
 
-    async def callback(self, log_id: int, timestamp: int, code: int = 200, msg: str = None) -> None:
+    async def callback(
+        self, log_id: int, timestamp: int, code: int = 200, msg: str = None
+    ) -> None:
         payload = [
             {
                 "logId": log_id,
@@ -85,12 +89,16 @@ class XXL:
         await self._post("callback", payload)
         logger.debug("Callback successful. %s" % payload)
 
-    async def _post(self, path: str, payload: JsonType, retry_times: Optional[int] = None) -> Response:
+    async def _post(
+        self, path: str, payload: JsonType, retry_times: Optional[int] = None
+    ) -> Response:
         times = 1
         retry_times = retry_times or self.retry_times
         while times <= retry_times or retry_times == 0:
             try:
-                async with self.session.post(self.url_path + path, json=payload, headers=self.headers) as response:
+                async with self.session.post(
+                    self.url_path + path, json=payload, headers=self.headers
+                ) as response:
                     if response.status == 200:
                         r = Response(**(await response.json()))
                         if not r.ok:
@@ -98,9 +106,12 @@ class XXL:
                         return r
                     raise XXLRegisterError(await response.text())
             except aiohttp.ClientConnectionError as e:
-                logger.error(f"Connection error {times} times: {str(e)}, retry afert {self.retry_interval}")
+                logger.error(
+                    f"Connection error {times} times: {str(e)}, retry afert {self.retry_interval}"
+                )
                 await asyncio.sleep(self.retry_interval)
                 times += 1
+                return True  # type: ignore
         raise ClientError("Connection error, retry times {}".format(times))
 
     async def close(self) -> None:
