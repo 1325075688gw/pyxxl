@@ -281,9 +281,9 @@ class Executor:
                 )
             except Exception as e:
                 logger.error(msg=str(e), trace_id=data.traceID)
-        except Exception as err:  # pylint: disable=broad-except
+        except Exception as err:
             task_status = False
-            logger.exception(err, trace_id=data.traceID)
+            logger.exception(str(err), trace_id=data.traceID)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg=str(err)
             )
