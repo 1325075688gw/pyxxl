@@ -4,6 +4,8 @@ import time
 from peach.xxl_job.pyxxl.schema import RunData
 from peach.helper.global_var.global_var import GlobalVar
 
+from contextvars import ContextVar
+
 
 ColorDict = {
     "DEBUG": "black",
@@ -65,3 +67,31 @@ class GlobalVars:
 
 
 g = GlobalVars
+
+
+_global_vars: ContextVar[dict] = ContextVar("pyxxl_vars", default={})
+
+
+class GlobalVars2:
+    @staticmethod
+    def _set_var(name: str, obj: Any) -> None:
+        _global_vars.get()[name] = obj
+
+    @staticmethod
+    def _get_var(name: str) -> Any:
+        return _global_vars.get()[name]
+
+    @staticmethod
+    def try_get(name: str) -> Optional[Any]:
+        return _global_vars.get().get(name)
+
+    @staticmethod
+    def set_xxl_run_data(data) -> None:
+        GlobalVars2._set_var("xxl_kwargs", data)
+
+    @property
+    def xxl_run_data(self):
+        return self._get_var("xxl_kwargs")
+
+
+g2 = GlobalVars2()

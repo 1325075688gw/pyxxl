@@ -15,6 +15,7 @@ from peach.sender.slack_sender.slack_helper import (
     get_slack_id_by_username,
     format_slack_user_id_list,
 )
+from peach.xxl_job.pyxxl.ctx import g2
 
 
 logger = logging.getLogger(__name__)
@@ -24,12 +25,16 @@ routes = web.RouteTableDef()
 
 @routes.post("/beat")
 async def beat(request: web.Request) -> web.Response:
+    trace_id = str(uuid.uuid4())
+    g2.set_xxl_run_data({"trace_id": trace_id})
     logger.debug("beat")
     return web.json_response(dict(code=200, msg=None))
 
 
 @routes.post("/idleBeat")
 async def idle_beat(request: web.Request) -> web.Response:
+    trace_id = str(uuid.uuid4())
+    g2.set_xxl_run_data({"trace_id": trace_id})
     data = await request.json()
     job_id = data["jobId"]
     logger.debug("idleBeat: %s" % data)
@@ -58,6 +63,7 @@ async def run(request: web.Request) -> web.Response:
     """
     data = await request.json()
     data["traceID"] = str(uuid.uuid4())
+    g2.set_xxl_run_data({"trace_id": data["traceID"]})
     run_data = RunData(**data)
     logger.debug(
         "Get task request. jobId={} logId={} [{}]".format(
@@ -81,6 +87,8 @@ async def run(request: web.Request) -> web.Response:
 
 @routes.post("/kill")
 async def kill(request: web.Request) -> web.Response:
+    trace_id = str(uuid.uuid4())
+    g2.set_xxl_run_data({"trace_id": trace_id})
     data = await request.json()
     await request.app["executor"].cancel_job(data["jobId"])
     return web.json_response(dict(code=200, msg=None))
@@ -96,6 +104,8 @@ async def log(request: web.Request) -> web.Response:
         "fromLineNum":0     // 日志开始行号，滚动加载日志
     }
     """
+    trace_id = str(uuid.uuid4())
+    g2.set_xxl_run_data({"trace_id": trace_id})
     data = await request.json()
     logger.info("log %s" % data)
     xxl_job_log = await get_xxl_job_log(data["logId"])
