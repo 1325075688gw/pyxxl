@@ -7,6 +7,9 @@
 import logging
 import sys
 import os
+import uuid
+from peach.log import trace_logging
+
 from peach.helper.singleton.singleton import singleton_decorator
 from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
 import pytz
@@ -24,10 +27,26 @@ DEBUG = 10
 NOTSET = 0
 
 
+class XxlJobFilter(logging.Filter):
+    def filter(self, record) -> bool:
+        from peach.xxl_job.pyxxl.ctx import g2
+
+        xxl_data = g2.xxl_run_data
+        trace_id = xxl_data.get("trace_id", None)
+        if not trace_id:
+            trace_id = trace_logging.get_trace_id()
+        if not trace_id:
+            trace_id = "".join(str(uuid.uuid4()).split("-"))
+        record.trace_id = trace_id
+        return True
+
+
 @singleton_decorator
 class XxlJobLogger(logging.Logger):
     def __init__(self, name):
         self.logger = self.getLogger(name)
+        self.logger.filters = [XxlJobFilter()]
+        logging.Logger.filters = [XxlJobFilter()]
         super().__init__(name, DEBUG)
 
     def _log(
@@ -69,10 +88,23 @@ class XxlJobLogger(logging.Logger):
     def getLogger(name):
         return logging.getLogger(name)
 
-    def info(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+    # def filter(self, record) -> bool:
+    #     from peach.xxl_job.pyxxl.ctx import g2
+    #     xxl_data = g2.xxl_run_data
+    #     trace_id = xxl_data.get("trace_id", None)
+    #     if not trace_id:
+    #         trace_id = trace_logging.get_trace_id()
+    #     if not trace_id:
+    #         trace_id = "".join(str(uuid.uuid4()).split("-"))
+    #     record.trace_id = trace_id
+    #     return True
 
-        trace_id = kwargs.pop("trace_id", None)
+    def info(self, msg, *args, **kwargs):
+        from peach.xxl_job.pyxxl.ctx import g, g2
+
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
@@ -82,9 +114,11 @@ class XxlJobLogger(logging.Logger):
         self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
@@ -97,9 +131,11 @@ class XxlJobLogger(logging.Logger):
         self.warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
@@ -112,9 +148,11 @@ class XxlJobLogger(logging.Logger):
         self.error(msg, *args, exc_info=True, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,

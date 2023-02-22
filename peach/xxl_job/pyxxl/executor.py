@@ -240,14 +240,11 @@ class Executor:
                 "{} jobId={} logId={} \n     [{}]".format(
                     start_job, data.jobId, data.logId, format_data
                 ),
-                trace_id=data.traceID,
             )
             func = (
-                handler.handler(data.traceID)
+                handler.handler()
                 if handler.is_async
-                else self.loop.run_in_executor(
-                    self.thread_pool, handler.handler, data.traceID
-                )
+                else self.loop.run_in_executor(self.thread_pool, handler.handler)
             )
             handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
             await log.update_xxl_job_handle_time(data.logId, handle_time)
@@ -257,33 +254,32 @@ class Executor:
             finish_job = '<span style="color: red;">Job finished</span>'
             logger.info(
                 f"{finish_job} jobId={data.jobId} logId={data.logId}",
-                trace_id=data.traceID,
             )
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
         except asyncio.CancelledError as e:
             task_status = False
-            logger.warning(str(e), exc_info=True, trace_id=data.traceID)
+            logger.warning(str(e), exc_info=True)
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg="CancelledError"
             )
         except JSONDecodeError:
             task_status = False
             msg = "参数格式错误，期望json字符串!"
-            logger.exception(msg=msg, trace_id=data.traceID)
+            logger.exception(msg=msg)
             await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
         except KeyError as e:
             task_status = False
             try:
                 msg = "期望{}字段, 但貌似发生了错误!".format(e.args[0])
-                logger.error(msg=msg, trace_id=data.traceID)
+                logger.error(msg=msg)
                 await self.xxl_client.callback(
                     data.logId, start_time, code=500, msg=msg
                 )
             except Exception as e:
-                logger.error(msg=str(e), trace_id=data.traceID)
+                logger.error(msg=str(e))
         except Exception as err:
             task_status = False
-            logger.exception(str(err), trace_id=data.traceID)
+            logger.exception(str(err))
             await self.xxl_client.callback(
                 data.logId, start_time, code=500, msg=str(err)
             )
@@ -294,6 +290,7 @@ class Executor:
             handle_duration = format(handle_duration, ".4f")
             await log.update_xxl_job_log(data.traceID, data.logId, handle_duration)
             g.delete_xxl_run_data(data.traceID)
+            g.delete_xxl_run_data(data.logId)
             if task_status:
                 await self._finish(data.jobId)
                 if data.dynamicAdd == 1:

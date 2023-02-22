@@ -56,10 +56,18 @@ class GlobalVars:
         raw_data = GlobalVars.get_xxl_run_data(trace_id)
         raw_data.update(data)
         GlobalVars._set_var(trace_id, raw_data)
+        xxl_kwargs = g2.xxl_run_data
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            GlobalVars._set_var(log_id, raw_data)
 
     @staticmethod
     def get_xxl_run_data(trace_id):
         return GlobalVars._get_var(trace_id)
+
+    @staticmethod
+    def get_xxl_run_data_log_id(log_id):
+        return GlobalVars._get_var(log_id)
 
     @staticmethod
     def delete_xxl_run_data(trace_id) -> RunData:
@@ -79,7 +87,10 @@ class GlobalVars2:
 
     @staticmethod
     def _get_var(name: str) -> Any:
-        return _global_vars.get()[name]
+        try:
+            return _global_vars.get()[name]
+        except Exception:
+            return {}
 
     @staticmethod
     def try_get(name: str) -> Optional[Any]:
