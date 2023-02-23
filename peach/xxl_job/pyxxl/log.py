@@ -7,9 +7,13 @@
 import logging
 import sys
 import os
+
 from peach.helper.singleton.singleton import singleton_decorator
 from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
 import pytz
+from django.conf import settings
+
+print(settings.SETTINGS_MODULE)
 
 
 _srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
@@ -22,6 +26,20 @@ WARN = WARNING
 INFO = 20
 DEBUG = 10
 NOTSET = 0
+
+
+# class XxlJobFilter(logging.Filter):
+#     def filter(self, record) -> bool:
+#         from peach.xxl_job.pyxxl.ctx import g2
+#
+#         xxl_data = g2.xxl_run_data
+#         trace_id = xxl_data.get("trace_id", None)
+#         if not trace_id:
+#             trace_id = trace_logging.get_trace_id()
+#         if not trace_id:
+#             trace_id = "".join(str(uuid.uuid4()).split("-"))
+#         record.trace_id = trace_id
+#         return True
 
 
 @singleton_decorator
@@ -69,58 +87,89 @@ class XxlJobLogger(logging.Logger):
     def getLogger(name):
         return logging.getLogger(name)
 
-    def info(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+    # def filter(self, record) -> bool:
+    #     from peach.xxl_job.pyxxl.ctx import g2
+    #     xxl_data = g2.xxl_run_data
+    #     trace_id = xxl_data.get("trace_id", None)
+    #     if not trace_id:
+    #         trace_id = trace_logging.get_trace_id()
+    #     if not trace_id:
+    #         trace_id = "".join(str(uuid.uuid4()).split("-"))
+    #     record.trace_id = trace_id
+    #     return True
 
-        trace_id = kwargs.pop("trace_id", None)
+    def info(self, msg, *args, **kwargs):
+        from peach.xxl_job.pyxxl.ctx import g, g2
+
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
                 {"handle_log": self._log(INFO, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
                 {"handle_log": self._log(WARNING, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
         self.warning(msg, *args, **kwargs)
 
     def error(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
                 {"handle_log": self._log(ERROR, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
         self.error(msg, *args, exc_info=True, **kwargs)
 
     def debug(self, msg, *args, **kwargs):
-        from peach.xxl_job.pyxxl.ctx import g
+        from peach.xxl_job.pyxxl.ctx import g, g2
 
-        trace_id = kwargs.pop("trace_id", None)
+        xxl_kwargs = g2.xxl_run_data
+        trace_id = xxl_kwargs.get("trace_id", None)
+        kwargs.pop("trace_id", None)
         if trace_id:
             g.set_xxl_run_data(
                 trace_id,
                 {"handle_log": self._log(DEBUG, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.debug(msg, *args, **kwargs)
 
 
@@ -132,6 +181,7 @@ async def prepare_handle_log(trace_id, id, handle_duration):
     xxl_job_log = await get_xxl_job_log(id)
     xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
     handle_log_str = '<span style="color: black; font-weight:600">执行log:</span>'
+    execute_status = "成功" if int(xxl_job_log.handle_code) == 200 else "失败"
     executor_log_params = (
         f"{'任务归属  ':10}: {xxl_job_log.author} \n"
         f"{'调度时间  ':10}: {xxl_job_log.trigger_time} \n"
@@ -140,7 +190,7 @@ async def prepare_handle_log(trace_id, id, handle_duration):
         f"{'执行handler ':11}: {xxl_job_log.executor_handler} \n"
         f"{'执行器任务参数':8}: {xxl_job_log.executor_param if xxl_job_log.executor_param else '参数为空！'} \n"
         f"{'执行时间  ':10}: {xxl_job_log.handle_time} \n"
-        f"{'执行状态  ':10}: {'成功' if int(xxl_job_log.handle_code) == 200 else '失败'} \n"
+        f"{'执行状态  ':10}: {execute_status} \n"
         f"{'执行耗时  ':10}: {handle_duration} s\n"
         f"{handle_log_str} \n"
         f"{handle_log}"
