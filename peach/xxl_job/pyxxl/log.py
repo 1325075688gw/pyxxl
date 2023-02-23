@@ -7,8 +7,6 @@
 import logging
 import sys
 import os
-import uuid
-from peach.log import trace_logging
 
 from peach.helper.singleton.singleton import singleton_decorator
 from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
@@ -27,25 +25,24 @@ DEBUG = 10
 NOTSET = 0
 
 
-class XxlJobFilter(logging.Filter):
-    def filter(self, record) -> bool:
-        from peach.xxl_job.pyxxl.ctx import g2
-
-        xxl_data = g2.xxl_run_data
-        trace_id = xxl_data.get("trace_id", None)
-        if not trace_id:
-            trace_id = trace_logging.get_trace_id()
-        if not trace_id:
-            trace_id = "".join(str(uuid.uuid4()).split("-"))
-        record.trace_id = trace_id
-        return True
+# class XxlJobFilter(logging.Filter):
+#     def filter(self, record) -> bool:
+#         from peach.xxl_job.pyxxl.ctx import g2
+#
+#         xxl_data = g2.xxl_run_data
+#         trace_id = xxl_data.get("trace_id", None)
+#         if not trace_id:
+#             trace_id = trace_logging.get_trace_id()
+#         if not trace_id:
+#             trace_id = "".join(str(uuid.uuid4()).split("-"))
+#         record.trace_id = trace_id
+#         return True
 
 
 @singleton_decorator
 class XxlJobLogger(logging.Logger):
     def __init__(self, name):
         self.logger = self.getLogger(name)
-        self.logger.filters = [XxlJobFilter()]
         super().__init__(name, DEBUG)
 
     def _log(
