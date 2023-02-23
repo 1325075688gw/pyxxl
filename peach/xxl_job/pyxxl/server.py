@@ -107,7 +107,7 @@ async def log(request: web.Request) -> web.Response:
     trace_id = "".join(str(uuid.uuid4()).split("-"))
     g2.set_xxl_run_data({"trace_id": trace_id})
     data = await request.json()
-    logger.info("log %s" % data)
+    # logger.info("log %s" % data)
     xxl_job_log = await get_xxl_job_log(data["logId"])
     handle_log = xxl_job_log.handle_log
     if not handle_log:

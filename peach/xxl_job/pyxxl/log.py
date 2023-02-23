@@ -107,6 +107,9 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(INFO, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.info(msg, *args, **kwargs)
 
     def warning(self, msg, *args, **kwargs):
@@ -121,6 +124,9 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(WARNING, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.warning(msg, *args, **kwargs)
 
     def warn(self, msg, *args, **kwargs):
@@ -138,6 +144,9 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(ERROR, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.error(msg, *args, **kwargs)
 
     def exception(self, msg, *args, **kwargs):
@@ -155,6 +164,9 @@ class XxlJobLogger(logging.Logger):
                 {"handle_log": self._log(DEBUG, msg, args, **kwargs)},
                 append=True,
             )
+        log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+        if log_id:
+            msg = "logId: " + str(log_id) + "\n" + msg
         self.logger.debug(msg, *args, **kwargs)
 
 
@@ -166,6 +178,7 @@ async def prepare_handle_log(trace_id, id, handle_duration):
     xxl_job_log = await get_xxl_job_log(id)
     xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
     handle_log_str = '<span style="color: black; font-weight:600">执行log:</span>'
+    execute_status = "成功" if int(xxl_job_log.handle_code) == 200 else "失败"
     executor_log_params = (
         f"{'任务归属  ':10}: {xxl_job_log.author} \n"
         f"{'调度时间  ':10}: {xxl_job_log.trigger_time} \n"
@@ -174,7 +187,7 @@ async def prepare_handle_log(trace_id, id, handle_duration):
         f"{'执行handler ':11}: {xxl_job_log.executor_handler} \n"
         f"{'执行器任务参数':8}: {xxl_job_log.executor_param if xxl_job_log.executor_param else '参数为空！'} \n"
         f"{'执行时间  ':10}: {xxl_job_log.handle_time} \n"
-        f"{'执行状态  ':10}: {'成功' if int(xxl_job_log.handle_code) == 200 else '失败'} \n"
+        f"{'执行状态  ':10}: {execute_status} \n"
         f"{'执行耗时  ':10}: {handle_duration} s\n"
         f"{handle_log_str} \n"
         f"{handle_log}"
