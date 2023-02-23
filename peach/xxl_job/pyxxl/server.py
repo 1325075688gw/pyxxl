@@ -121,7 +121,7 @@ async def log(request: web.Request) -> web.Response:
             "fromLineNum": 1,
             "toLineNum": 1,
             "logContent": handle_log,
-            "isEnd": True,
+            "isEnd": True if xxl_job_log.handle_log else False,
         },
     }
 

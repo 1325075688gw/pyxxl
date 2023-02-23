@@ -46,7 +46,6 @@ class XxlJobLogger(logging.Logger):
     def __init__(self, name):
         self.logger = self.getLogger(name)
         self.logger.filters = [XxlJobFilter()]
-        logging.Logger.filters = [XxlJobFilter()]
         super().__init__(name, DEBUG)
 
     def _log(

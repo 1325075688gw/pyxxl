@@ -55,6 +55,17 @@ class JobHandler:
         )
         return json.loads(res.text)
 
+    @classmethod
+    def cancel_dynamic_task(cls, unique_key):
+        cookies = {"REMOTE_COOKIE": ExecutorConfig.remote_cookie}
+        data = {"uniqueKey": unique_key}
+        res = requests.post(
+            url=ExecutorConfig().xxl_admin_k8s_baseurl + "jobinfo/dynamic_task/cancel/",
+            data=data,
+            cookies=cookies,
+        )
+        return json.loads(res.text)
+
     def register(
         self, *args: Any, name: Optional[str] = None, replace: bool = False
     ) -> Callable[[DecoratedCallable], DecoratedCallable]:

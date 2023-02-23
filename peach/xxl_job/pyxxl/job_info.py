@@ -26,6 +26,7 @@ class JobInfo:
     executorFailRetryCount: int = 0
     glueRemark: str = "GLUE代码初始化"
     glueSource: str = ""
+    uniqueKey: str = ""
 
     def __post_init__(self):
         self.cronGen_display = self.scheduleConf

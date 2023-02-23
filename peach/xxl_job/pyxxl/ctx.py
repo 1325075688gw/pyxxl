@@ -48,7 +48,17 @@ class GlobalVars:
             path_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.name)}</span>'
             func_name = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.funcName)}</span>'
             lineno = f'<span style="color: {ColorDict.get(str(handle_log.levelname).upper(), "black")};">{str(handle_log.lineno)}</span>'
-            path = path_name + ", in " + func_name + ", line " + lineno
+            xxl_kwargs = g2.xxl_run_data
+            log_id = xxl_kwargs.get("run_data", {}).get("logId", "")
+            path = (
+                path_name
+                + ", in "
+                + func_name
+                + ", line "
+                + lineno
+                + ", logId="
+                + str(log_id)
+            )
             handle_log = f"\n{level_name} {data_time} {path}\n     {handle_log.msg}"  # type: ignore
             old_handle_log = GlobalVars.get_xxl_run_data(trace_id).get("handle_log", "")
             new_handle_log = old_handle_log + handle_log
