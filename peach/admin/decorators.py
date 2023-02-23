@@ -54,6 +54,7 @@ def check_permission(permission_code, check_include_fields=False):
     def decorator(func):
         def wrapper(*args, **kwargs):
             request = args[0]
+            request.permission_code = permission_code
             auth.check_permission(permission_code, request)
 
             request.include_fields = None

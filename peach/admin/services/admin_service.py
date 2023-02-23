@@ -383,13 +383,20 @@ def get_role(role_id, with_permissions=False):
     返回角色信息, 如果 with_permissions 为True时，返回数据包含权限列表
     :return {'permission': list<RolePermissionBO>}
     """
+
+    def _wrapper_rel_extend(e):
+        res = e.to_dict(fields=["permission", "include_fields"])
+        if hasattr(
+            e, "rolepermissionrelextend"
+        ):  # 注册 peach.admin_extensions 扩展, 会有这个属性
+            res["limit_confs"] = e.rolepermissionrelextend.limit_confs or None
+        return res
+
     role = _get_role(role_id)
     result = role.to_dict()
     if with_permissions:
         permissions = RolePermissionRel.objects.filter(role=role)
-        result["permissions"] = [
-            e.to_dict(fields=["permission", "include_fields"]) for e in permissions
-        ]
+        result["permissions"] = [_wrapper_rel_extend(e) for e in permissions]
     return result
 
 
@@ -418,13 +425,19 @@ def _bind_role_and_permissions(role, permissions):
     for each in permissions:
         permission_id = each.get("permission_id")
         include_fields = each.get("include_fields")
+        limit_confs = each.get("limit_confs")
         permission = _get_permission(permission_id)
         if not permission.is_leaf:
             raise BizException(ERROR_ROLE_BIND_ONLY_LEAF_PERMISSION, permission_id)
         if not permission.fields and include_fields:
             raise BizException(ERROR_ROLE_NOT_ALLOW_SET_PERMISSION_ATTR, permission_id)
-        RolePermissionRel.objects.create(
-            role=role, permission=permission, include_fields=include_fields
+        rel = RolePermissionRel.objects.create(
+            role=role,
+            permission=permission,
+            include_fields=include_fields,
+        )
+        signals.post_add_rel.send(
+            sender=RolePermissionRel, instance=rel, limit_confs=limit_confs
         )
 
 
