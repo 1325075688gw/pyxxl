@@ -11,6 +11,9 @@ import os
 from peach.helper.singleton.singleton import singleton_decorator
 from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
 import pytz
+from django.conf import settings
+
+print(settings.SETTINGS_MODULE)
 
 
 _srcfile = os.path.normcase(logging.addLevelName.__code__.co_filename)
