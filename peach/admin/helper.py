@@ -1,6 +1,9 @@
+import typing
+
 from django.conf import settings
 
 from .services import admin_service
+from ..misc.util import dto_to_dict
 
 
 def wrapper_record_info(record_items):
@@ -25,11 +28,18 @@ def wrapper_include_fields(include_fields: list, data: list):
     if not data or not include_fields:
         return []
 
-    return [_filter_fields(include_fields, item) for item in data]
+    return [
+        _filter_fields(
+            include_fields, item if isinstance(item, dict) else dto_to_dict(item)
+        )
+        for item in data
+    ]
 
 
 def _filter_fields(include_fields: list, item: dict):
-    _item = dict()
+    _item: typing.Dict = dict()
+    if not item:
+        return _item
     for key in item.keys():
         if key not in include_fields:
             continue
