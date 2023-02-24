@@ -1,5 +1,4 @@
 # type: ignore
-import logging
 
 from aiohttp import web
 
@@ -16,9 +15,9 @@ from peach.sender.slack_sender.slack_helper import (
     format_slack_user_id_list,
 )
 from peach.xxl_job.pyxxl.ctx import g2
+from peach.xxl_job.pyxxl.log import XxlJobLogger
 
-
-logger = logging.getLogger(__name__)
+logger = XxlJobLogger(__name__)
 
 routes = web.RouteTableDef()
 

@@ -49,7 +49,7 @@ class ExecutorConfig:
     """执行器线程池（执行同步任务时使用）. Default: 30"""
     task_timeout: int = 60 * 10
     """任务的默认超时时间,如果调度器传了以参数executorTimeout为准. Default: 60 * 10"""
-    task_queue_length: int = 500
+    task_queue_length: int = 30
     """任务的队列长度.单机串行的队列长度,当阻塞的任务大于此值时会抛弃. Default: 30"""
     graceful_close: bool = True
     """是否优雅关闭. Default: True"""
