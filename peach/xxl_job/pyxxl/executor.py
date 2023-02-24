@@ -208,8 +208,8 @@ class Executor:
                         % run_data.executorBlockStrategy,
                         executorBlockStrategy=run_data.executorBlockStrategy,
                     )
-
-            start_time = int(time.time()) * 1000
+            # 使用time.time_ns()而不是time.time(),因为使用time.time()会丢失ms精度
+            start_time = int(time.time_ns() / 1000000)
             task = self.loop.create_task(self._run(handler_obj, start_time, run_data))
             self.tasks[run_data.jobId] = task
 
@@ -278,6 +278,13 @@ class Executor:
             msg = "参数格式错误，期望json字符串!"
             logger.exception(msg=msg)
             await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
+        except asyncio.TimeoutError as e:
+            task_status = False
+            timeout = data.executorTimeout or self.config.task_timeout
+            logger.error(f"{str(e)}, 任务执行超时, 设定执行时间: {timeout}s")
+            await self.xxl_client.callback(
+                data.logId, start_time, code=500, msg="TimeoutError"
+            )
         except KeyError as e:
             task_status = False
             try:
