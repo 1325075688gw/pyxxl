@@ -258,7 +258,7 @@ class Executor:
                 else self.loop.run_in_executor(self.thread_pool, handler.handler)
             )
             handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
-            await log.update_xxl_job_handle_time(data.logId, handle_time)
+            # await log.update_xxl_job_handle_time(data.logId, handle_time)
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
