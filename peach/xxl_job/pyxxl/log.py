@@ -1,15 +1,13 @@
 # Author  : Gavin-GZ
 # Time    : 2023/2/6 17:52
 
-# type: ignore
-
 
 import logging
 import sys
 import os
 
 from peach.helper.singleton.singleton import singleton_decorator
-from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo
+from peach.xxl_job.pyxxl.model import XxlJobLog, XxlJobInfo  # type: ignore
 import pytz
 from django.conf import settings
 
@@ -46,7 +44,12 @@ NOTSET = 0
 class XxlJobLogger(logging.Logger):
     def __init__(self, name):
         self.logger = self.getLogger(name)
-        super().__init__(name, DEBUG)
+        self.logger.level = INFO
+        self.level = INFO
+        self.setLevel(INFO)
+        self.logger.setLevel(INFO)
+        # self.logger.filters = [XxlJobFilter()]
+        super().__init__(name, INFO)
 
     def _log(
         self,
