@@ -12,6 +12,8 @@ from typing import Any, Callable, Dict, List, Optional
 from json import JSONDecodeError
 from pytz import timezone
 from asgiref.sync import sync_to_async
+from django import db
+import traceback
 
 
 import requests
@@ -259,6 +261,7 @@ class Executor:
             )
             handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
             # await log.update_xxl_job_handle_time(data.logId, handle_time)
+            db.close_old_connections()
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
@@ -295,12 +298,11 @@ class Executor:
                 )
             except Exception as e:
                 logger.error(msg=str(e))
-        except Exception as err:
+        except Exception:
             task_status = False
-            logger.exception(str(err))
-            await self.xxl_client.callback(
-                data.logId, start_time, code=500, msg=str(err)
-            )
+            msg = str(traceback.format_exc())
+            logger.error(msg=msg)
+            await self.xxl_client.callbackq(data.logId, start_time, code=500, msg=msg)
         finally:
             handle_duration = (
                 time.time() * 1000 - handle_time.timestamp() * 1000
