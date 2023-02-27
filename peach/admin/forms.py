@@ -7,6 +7,7 @@ from peach.django.forms import (
     StripStrField,
 )
 from .dto import UserListCriteria, RoleListCriteria, RecordListCriteria
+from peach.admin_extensions.forms import RolePermissionRelMixin
 
 
 class RegisterSchema(BaseSchema):
@@ -66,7 +67,7 @@ class UpdateUserPasswordSchema(BaseSchema):
     new_password = fields.String(required=True)
 
 
-class RolePermissionRelSchema(BaseSchema):
+class RolePermissionRelSchema(BaseSchema, RolePermissionRelMixin):
     permission_id = fields.Integer(required=True)
     include_fields = fields.List(fields.String(required=True))
 
