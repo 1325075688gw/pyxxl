@@ -302,7 +302,7 @@ class Executor:
             task_status = False
             msg = str(traceback.format_exc())
             logger.error(msg=msg)
-            await self.xxl_client.callbackq(data.logId, start_time, code=500, msg=msg)
+            await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
         finally:
             handle_duration = (
                 time.time() * 1000 - handle_time.timestamp() * 1000
