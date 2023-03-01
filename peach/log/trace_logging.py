@@ -21,8 +21,7 @@ def get_trace_id_from_xxl_job():
         xxl_data = g2.xxl_run_data
         trace_id = xxl_data.get("trace_id", None)
         return trace_id
-    except Exception as e:
-        print(e)
+    except Exception:
         return None
 
 
