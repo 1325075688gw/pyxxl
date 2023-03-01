@@ -240,6 +240,7 @@ class Executor:
     async def _run(self, handler: HandlerInfo, start_time: int, data: RunData) -> None:
         handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
         try:
+            db.close_old_connections()
             task_status = True
             if data.executorParams:
                 data.executorParams = json.loads(data.executorParams)
@@ -257,11 +258,13 @@ class Executor:
             func = (
                 handler.handler()
                 if handler.is_async
-                else self.loop.run_in_executor(self.thread_pool, handler.handler)
+                else self.loop.run_in_executor(
+                    self.thread_pool,
+                    handler.handler,
+                )
             )
             handle_time = datetime.datetime.now(tz=timezone("Asia/Shanghai"))
             # await log.update_xxl_job_handle_time(data.logId, handle_time)
-            db.close_old_connections()
             result = await asyncio.wait_for(
                 func, data.executorTimeout or self.config.task_timeout
             )
@@ -269,7 +272,12 @@ class Executor:
             logger.info(
                 f"{finish_job} jobId={data.jobId} logId={data.logId}",
             )
+            await self._finish(data.jobId)
+            logger.info(
+                f"jobId={data.jobId}, logId={data.logId} has been removed from tasks"
+            )
             await self.xxl_client.callback(data.logId, start_time, code=200, msg=result)
+            logger.info(f"jobId={data.jobId}, logId={data.logId} callback[200] success")
         except asyncio.CancelledError as e:
             task_status = False
             logger.warning(str(e), exc_info=True)
@@ -304,6 +312,8 @@ class Executor:
             logger.error(msg=msg)
             await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
         finally:
+            db.close_old_connections()
+            await self._finish(data.jobId)
             handle_duration = (
                 time.time() * 1000 - handle_time.timestamp() * 1000
             ) / 1000
@@ -312,7 +322,6 @@ class Executor:
             g.delete_xxl_run_data(data.traceID)
             g.delete_xxl_run_data(data.logId)
             if task_status:
-                await self._finish(data.jobId)
                 if data.dynamicAdd == 1:
                     await log.delte_xxl_job_info(data.jobId)
             else:

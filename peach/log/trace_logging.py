@@ -15,11 +15,15 @@ def clear_trace():
 
 # TODO====================================================后期扩展log，支持通过__LOGGER.info 打印xxl-job日志=================
 def get_trace_id_from_xxl_job():
-    from peach.xxl_job.pyxxl.ctx import g2
+    try:
+        from peach.xxl_job.pyxxl.ctx import g2
 
-    xxl_data = g2.xxl_run_data
-    trace_id = xxl_data.get("trace_id", None)
-    return trace_id
+        xxl_data = g2.xxl_run_data
+        trace_id = xxl_data.get("trace_id", None)
+        return trace_id
+    except Exception as e:
+        print(e)
+        return None
 
 
 def get_trace_id_from_otel():
