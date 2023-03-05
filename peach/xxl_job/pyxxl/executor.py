@@ -5,6 +5,7 @@ import functools
 import json
 import time
 import dataclasses
+import contextvars
 
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -255,11 +256,13 @@ class Executor:
                     start_job, data.jobId, data.logId, format_data
                 ),
             )
+            context = contextvars.copy_context()
             func = (
                 handler.handler()
                 if handler.is_async
                 else self.loop.run_in_executor(
                     self.thread_pool,
+                    context.run,
                     handler.handler,
                 )
             )
@@ -286,7 +289,7 @@ class Executor:
             )
         except JSONDecodeError:
             task_status = False
-            msg = "参数格式错误，期望json字符串!"
+            msg = "Parameter format error, expected json format!"
             logger.exception(msg=msg)
             await self.xxl_client.callback(data.logId, start_time, code=500, msg=msg)
         except asyncio.TimeoutError as e:
@@ -299,7 +302,7 @@ class Executor:
         except KeyError as e:
             task_status = False
             try:
-                msg = "期望{}字段, 但貌似发生了错误!".format(e.args[0])
+                msg = f"The {e.args[0]} field is expected, but it seems that an error has occurred!"
                 logger.error(msg=msg)
                 await self.xxl_client.callback(
                     data.logId, start_time, code=500, msg=msg
