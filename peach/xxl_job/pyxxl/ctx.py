@@ -28,7 +28,7 @@ class GlobalVars:
 
     @staticmethod
     def _delete_var(name: str):
-        GlobalVar.global_dict.pop(name)
+        GlobalVar.global_dict.pop(name, None)
 
     @staticmethod
     def try_get(name: str) -> Optional[Any]:
