@@ -206,6 +206,8 @@ async def update_xxl_job_log(trace_id, id, handle_duration):
     handle_log = await prepare_handle_log(
         trace_id=trace_id, id=id, handle_duration=handle_duration
     )
+    if len(handle_log) > 50000:
+        handle_log = handle_log[:20000] + handle_log[len(handle_log) - 20000 :]
     XxlJobLog.objects.using("xxl_job").filter(id=id).update(
         handle_log=handle_log, handle_duration=handle_duration
     )
