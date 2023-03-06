@@ -181,6 +181,12 @@ async def prepare_handle_log(trace_id, id, handle_duration):
 
     data = g.get_xxl_run_data(trace_id=trace_id)
     handle_log = data.get("handle_log")
+    if len(handle_log) > 50000:
+        handle_log = (
+            handle_log[:20000]
+            + "\n     The log exceeds the specified length(65535 chars)\n     ......\n     "
+            + handle_log[len(handle_log) - 20000 :]
+        )
     xxl_job_log = await get_xxl_job_log(id)
     xxl_job_log.handle_time = xxl_job_log.handle_time.astimezone(pytz.timezone("UTC"))
     handle_log_str = '<span style="color: black; font-weight:600">执行log:</span>'
@@ -206,8 +212,6 @@ async def update_xxl_job_log(trace_id, id, handle_duration):
     handle_log = await prepare_handle_log(
         trace_id=trace_id, id=id, handle_duration=handle_duration
     )
-    if len(handle_log) > 50000:
-        handle_log = handle_log[:20000] + handle_log[len(handle_log) - 20000 :]
     XxlJobLog.objects.using("xxl_job").filter(id=id).update(
         handle_log=handle_log, handle_duration=handle_duration
     )
